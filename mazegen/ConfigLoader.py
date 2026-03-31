@@ -27,7 +27,15 @@ class ConfigLoader:
 
     def _read_lines(self, filepath: str) -> list[str]:
         """ファイルを開き,コメント/空行を除いた行リストを返す"""
-        pass
+        processed_line: list[str] = []
+        try:
+            with open(filepath, encoding="utf-8") as f:
+                for line in f:
+                    if not line.startswith("#"):
+                        processed_line.append(line)
+        except Exception as e:
+            raise e
+        return processed_line
 
     def _parse_line(self, line: str) -> tuple[str, str]:
         """key=value形式の一行をパースしてタプルで返す"""
