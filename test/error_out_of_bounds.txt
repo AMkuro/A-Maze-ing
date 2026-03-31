@@ -1,0 +1,7 @@
+WIDTH=10
+HEIGHT=10
+# 範囲外のエラー（WIDTH=10なのに15を指定）
+ENTRY=15,0
+EXIT=9,9
+OUTPUT_FILE=out_of_bounds.txt
+PERFECT=True
