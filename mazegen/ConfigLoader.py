@@ -130,19 +130,3 @@ class ConfigLoader:
             raw[cls.key_map[key]] = value
 
         return AppConfig.model_validate_strings(raw)
-
-
-if __name__ == "__main__":
-    import subprocess  # noqa: E402
-    import sys  # noqa: E402
-
-    project_root = Path(__file__).resolve().parent.parent
-    test_file = project_root / "test" / "test_config_loader.py"
-    if not test_file.exists():
-        print(f"Error: test file not found: {test_file}", file=sys.stderr)
-        sys.exit(1)
-    result = subprocess.run(
-        [sys.executable, "-m", "pytest", str(test_file), "-v"],
-        cwd=str(project_root),
-    )
-    sys.exit(result.returncode)
