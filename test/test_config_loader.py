@@ -7,17 +7,18 @@ ConfigLoader のテストスイート
   - ConfigLoader._check_duplicate_keys : 重複キー検出
   - ConfigLoader._convert_and_validate : キー変換 + Pydantic バリデーション
   - AppConfig                     : 各フィールドバリデーション
-  - ConfigLoader.load             : エンド・ツー・エンド (既存テストファイル使用)
+  - ConfigLoader.load             : エンド・ツー・エンド
 """
 
+import sys
 import pytest
 from pathlib import Path
 from pydantic import ValidationError
 
-from ConfigLoader import ConfigLoader, AppConfig
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / "mazegen"))
 
-# テストファイルが置かれているディレクトリ
-TEST_DIR = Path(__file__).resolve().parent
+from ConfigLoader import ConfigLoader, AppConfig  # noqa: E402
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -389,32 +390,51 @@ class TestAppConfig:
 # load (エンド・ツー・エンド)
 # ──────────────────────────────────────────────────────────────────────────────
 class TestLoadIntegration:
-    """ConfigLoader.load の統合テスト（既存テストファイルを使用）"""
+    """ConfigLoader.load の統合テスト"""
 
-    def test_load_bad_syntax(self) -> None:
-        """error_bad_syntax.txt: '=' のない行で ValueError"""
+    def test_load_bad_syntax(self, tmp_path: Path) -> None:
+        """'=' のない行で ValueError"""
+        cfg = tmp_path / "c.txt"
+        cfg.write_text(
+            "WIDTH=10\nHEIGHT=10\n"
+            "ENTRY 0,0\n"  # = がない
+            "EXIT=9,9\nOUTPUT_FILE=out.txt\nPERFECT=True\n"
+        )
         with pytest.raises(ValueError, match="Parse format is incorrect"):
-            ConfigLoader().load(str(TEST_DIR / "error_bad_syntax.txt"))
+            ConfigLoader().load(str(cfg))
 
-    def test_load_duplicate_key(self) -> None:
-        """error_duplicate_key.txt: WIDTH が重複して ValueError"""
+    def test_load_duplicate_key(self, tmp_path: Path) -> None:
+        """WIDTH が重複して ValueError"""
+        cfg = tmp_path / "c.txt"
+        cfg.write_text(
+            "WIDTH=10\nHEIGHT=10\nENTRY=0,0\nEXIT=9,9\n"
+            "OUTPUT_FILE=out.txt\nPERFECT=True\nWIDTH=20\n"
+        )
         with pytest.raises(ValueError, match="WIDTH is duplicate"):
-            ConfigLoader().load(str(TEST_DIR / "error_duplicate_key.txt"))
+            ConfigLoader().load(str(cfg))
 
-    def test_load_missing_key(self) -> None:
-        """error_missing_key.txt: PERFECT が欠けて ValidationError"""
+    def test_load_missing_key(self, tmp_path: Path) -> None:
+        """PERFECT が欠けて ValidationError"""
+        cfg = tmp_path / "c.txt"
+        cfg.write_text(
+            "WIDTH=10\nHEIGHT=10\nENTRY=0,0\nEXIT=9,9\nOUTPUT_FILE=out.txt\n"
+        )
         with pytest.raises(ValidationError):
-            ConfigLoader().load(str(TEST_DIR / "error_missing_key.txt"))
+            ConfigLoader().load(str(cfg))
 
-    def test_load_out_of_bounds(self) -> None:
-        """error_out_of_bounds.txt: ENTRY=15,0 が WIDTH=10 を超えて ValidationError"""
+    def test_load_out_of_bounds(self, tmp_path: Path) -> None:
+        """ENTRY=15,0 が WIDTH=10 を超えて ValidationError"""
+        cfg = tmp_path / "c.txt"
+        cfg.write_text(
+            "WIDTH=10\nHEIGHT=10\nENTRY=15,0\nEXIT=9,9\n"
+            "OUTPUT_FILE=out.txt\nPERFECT=True\n"
+        )
         with pytest.raises(ValidationError, match="entry is out of bounds"):
-            ConfigLoader().load(str(TEST_DIR / "error_out_of_bounds.txt"))
+            ConfigLoader().load(str(cfg))
 
-    def test_load_valid_with_comments(self) -> None:
-        """valid_with_comments.txt が正常にロードされる
-        (ALGORITHM=dfs が Literal["prim", "kruskal", "dfs"] に含まれる)"""
-        result = ConfigLoader().load(str(TEST_DIR / "valid_with_comments.txt"))
+    def test_load_project_config(self) -> None:
+        """プロジェクトの config.txt が正常にロードされる"""
+        result = ConfigLoader().load(str(PROJECT_ROOT / "config.txt"))
         assert result.width == 20
         assert result.height == 15
         assert result.seed == 42
