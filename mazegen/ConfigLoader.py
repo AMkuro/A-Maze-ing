@@ -133,14 +133,16 @@ class ConfigLoader:
 
 
 if __name__ == "__main__":
-    test = ConfigLoader()
-    test_files: list[str] = [
-        "error_bad_syntax.txt",
-        "error_duplicate_key.txt",
-        "error_missing_key.txt",
-        "error_out_of_bounds.txt",
-        "valid_with_comments.txt",
-    ]
-    # for test_file in test_files:
-    # print(test._read_lines(f"../test/{test_file}"))
-    print(test._parse_line(line="ENTRY = 0,0"))
+    import subprocess  # noqa: E402
+    import sys  # noqa: E402
+
+    project_root = Path(__file__).resolve().parent.parent
+    test_file = project_root / "test" / "test_config_loader.py"
+    if not test_file.exists():
+        print(f"Error: test file not found: {test_file}", file=sys.stderr)
+        sys.exit(1)
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", str(test_file), "-v"],
+        cwd=str(project_root),
+    )
+    sys.exit(result.returncode)
