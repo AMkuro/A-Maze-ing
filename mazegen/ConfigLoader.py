@@ -7,7 +7,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from typing import Literal
+from typing import ClassVar, Literal
 
 
 class AppConfig(BaseModel):
@@ -20,7 +20,7 @@ class AppConfig(BaseModel):
     output_file: str
     perfect: bool
     seed: int | None = None
-    algorithm: Literal["prim", "kruskal", "bfs"] = "bfs"
+    algorithm: Literal["prim", "kruskal", "dfs"] = "dfs"
     display_mode: Literal["ascii", "mlx"] = "ascii"
 
     @field_validator("entry", "exit", mode="before")
@@ -34,11 +34,20 @@ class AppConfig(BaseModel):
             return (int(x_str.strip()), int(y_str.strip()))
         return value
 
+    _forbidden_file_chars: ClassVar[frozenset[str]] = frozenset(
+        '\x00\n\r<>|*?"'
+    )
+
     @field_validator("output_file")
     @classmethod
     def validate_output_file(cls, value: str) -> str:
         if not value.strip():
             raise ValueError("output_file must not be empty")
+        bad: set[str] = set(value) & AppConfig._forbidden_file_chars
+        if bad:
+            raise ValueError(
+                f"output_file contains invalid characters: {sorted(bad)!r}"
+            )
         return value
 
     @model_validator(mode="after")
@@ -73,7 +82,6 @@ class ConfigLoader:
         parsed_lines: list[tuple[str, str]] = []
         for line in clean_lines:
             pair = self._parse_line(line)
-            # self._check_allowed_keys(pair)
             parsed_lines.append(pair)
         self._check_duplicate_keys(parsed_lines)
         return self._convert_and_validate(parsed_lines)
@@ -84,7 +92,7 @@ class ConfigLoader:
         try:
             with open(filepath, encoding="utf-8") as f:
                 for line in f:
-                    line = line.rstrip("\n")
+                    line = line.rstrip("\n").strip()
                     if not line.startswith("#") and line:
                         processed_line.append(line)
         except Exception as e:  # TODO:Narrow the Exception
