@@ -41,8 +41,14 @@ class MazeGenerator:
 
     @staticmethod
     def _place_entry_exit(grid: Grid) -> Grid:
-        """Place entry and exit."""
-        raise NotImplementedError
+        """Place maze entry and exit."""
+        height = len(grid)
+        width = len(grid[0])
+
+        grid[1][0] = PASSAGE
+        grid[height - 2][width - 1] = PASSAGE
+
+        return grid
 
     @staticmethod
     def _embed_42_pattern(grid: Grid) -> Grid:
