@@ -63,11 +63,11 @@ class MazeSolver:
     ) -> list[Pos]:
 
         path: list[Pos] = []
-        current: Pos | None = end
+        curr: Pos | None = end
 
-        while current is not None:
-            path.append(current)
-            current = came_from[current]
+        while curr is not None:
+            path.append(curr)
+            curr = came_from[curr]
 
         path.reverse()
         return path
