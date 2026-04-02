@@ -1,6 +1,6 @@
 from collections import deque
 
-Coord = tuple[int, int]
+Pos = tuple[int, int]
 
 
 class MazeSolver:
@@ -8,8 +8,8 @@ class MazeSolver:
 
     @staticmethod
     def solve(maze: "Maze") -> "Solution":
-        start: Coord = maze.start
-        end: Coord = maze.end
+        start: Pos = maze.start
+        end: Pos = maze.end
 
         came_from = MazeSolver._bfs(maze, start, end)
 
@@ -24,12 +24,12 @@ class MazeSolver:
     @staticmethod
     def _bfs(
         maze: "Maze",
-        start: Coord,
-        end: Coord,
-    ) -> dict[Coord, Coord | None]:
+        start: Pos,
+        end: Pos,
+    ) -> dict[Pos, Pos | None]:
 
         queue = deque([start])
-        came_from: dict[Coord, Coord | None] = {start: None}
+        came_from: dict[Pos, Pos | None] = {start: None}
 
         directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
@@ -42,7 +42,7 @@ class MazeSolver:
             for dy, dx in directions:
                 ny = y + dy
                 nx = x + dx
-                neighbor: Coord = (ny, nx)
+                neighbor: Pos = (ny, nx)
 
                 if neighbor in came_from:
                     continue
@@ -57,13 +57,13 @@ class MazeSolver:
 
     @staticmethod
     def _reconstruct_path(
-        came_from: dict[Coord, Coord | None],
-        start: Coord,
-        end: Coord,
-    ) -> list[Coord]:
+        came_from: dict[Pos, Pos | None],
+        start: Pos,
+        end: Pos,
+    ) -> list[Pos]:
 
-        path: list[Coord] = []
-        current: Coord | None = end
+        path: list[Pos] = []
+        current: Pos | None = end
 
         while current is not None:
             path.append(current)
@@ -73,7 +73,7 @@ class MazeSolver:
         return path
 
     @staticmethod
-    def _to_news_string(path: list[Coord]) -> str:
+    def _to_news_string(path: list[Pos]) -> str:
         moves: list[str] = []
 
         for i in range(1, len(path)):
