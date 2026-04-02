@@ -1,5 +1,8 @@
 Grid = list[list[int]]
+Pos = tuple[int, int]
 
+WALL = 1
+PASSAGE = 0
 
 class MazeGenerator:
     """Generate maze."""
@@ -11,12 +14,25 @@ class MazeGenerator:
         grid = MazeGenerator._place_entry_exit(grid)
         grid = MazeGenerator._embed_42_pattern(grid)
 
-        return Maze(grid=grid)
+        entry = MazeGenerator._find_entry(grid)
+        exit = MazeGenerator._find_exit(grid)
+
+        return Maze(
+            width=width,
+            height=height,
+            grid=grid,
+            entry=entry,
+            exit=exit,
+            seed=config.seed,
+        )
 
     @staticmethod
     def _init_grid(width: int, height: int) -> Grid:
-        """Initialize grid."""
-        raise NotImplementedError
+        """Initialize grid filled with walls."""
+        grid_height = height * 2 + 1
+        grid_width = width * 2 + 1
+
+        return [[WALL for _ in range(grid_width)] for _ in range(grid_height)]
 
     @staticmethod
     def _carve_passages(grid: Grid) -> Grid:
