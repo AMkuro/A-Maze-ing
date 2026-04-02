@@ -62,12 +62,15 @@ class MazeSolver:
         end: Pos,
     ) -> list[Pos]:
 
-        path: list[Pos] = []
-        curr: Pos | None = end
+        path: list[Pos] = [end]
+        curr: Pos = end
 
-        while curr is not None:
-            path.append(curr)
-            curr = came_from[curr]
+        while curr != start:
+            prev = came_from[curr]
+            if prev is None:
+                raise ValueError("Invalid path data")
+            path.append(prev)
+            curr = prev
 
         path.reverse()
         return path
