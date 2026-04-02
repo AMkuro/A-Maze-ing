@@ -64,6 +64,7 @@ class Visualizer:
             | padded[np.ix_(per, pec - 1)]
             | padded[np.ix_(per, pec + 1)]
         )
+        print(canvas)
         return canvas
 
     def _render_to_string(self, buffer: np.ndarray) -> str:
@@ -136,26 +137,6 @@ class Visualizer:
             for r in out_rows:
                 for c in out_cols:
                     highlight[r, c] = color
-            # r_top = int(out_rows.min()) - 1
-            # if r_top >= 0:
-            #     for c in out_cols:
-            #         if int(idx[r_top, c]) & 0b0011:
-            #             highlight[r_top, c] = color
-            # r_bot = int(out_rows.max()) + 1
-            # if r_bot < char_grid.shape[0]:
-            #     for c in out_cols:
-            #         if int(idx[r_bot, c]) & 0b1100:
-            #             highlight[r_bot, c] = color
-            # c_left = int(out_cols.min()) - 1
-            # if c_left >= 0:
-            #     for r in out_rows:
-            #         if int(idx[r, c_left]) & 0b0100:
-            #             highlight[r, c_left] = color
-            # c_right = int(out_cols.max()) + 1
-            # if c_right < char_grid.shape[1]:
-            #     for r in out_rows:
-            #         if int(idx[r, c_right]) & 0b1000:
-            #             highlight[r, c_right] = color
         last_row = char_grid.shape[0] - 1
         last_col = char_grid.shape[1] - 1
         lines = []
@@ -165,7 +146,7 @@ class Visualizer:
                 v = int(idx[r, c])
                 hl = highlight[r, c]
                 suppress_bg = c == last_col or (
-                    r == last_row and v & 0b1100 == 0b1100
+                    r == last_row and (v & 0b1100 == 0b1100)
                 )
                 bg = "" if suppress_bg else (hl or path_pre)
                 if v == 0:
@@ -216,23 +197,24 @@ if __name__ == "__main__":
         pass
 
     maze = Maze(
-        5,
-        5,
+        7,
+        7,
         [
-            [9, 1, 1, 5, 7],
-            [10, 12, 2, 11, 11],
-            [8, 3, 14, 10, 10],
-            [10, 12, 5, 6, 10],
-            [12, 5, 5, 5, 6],
+            [0, 0, 4, 0, 8, 0, 12],
+            [0, 0, 0, 0, 0, 0, 0],
+            [1, 0, 5, 0, 9, 0, 13],
+            [0, 0, 0, 0, 0, 0, 0],
+            [2, 0, 6, 0, 10, 0, 14],
+            [0, 0, 0, 0, 0, 0, 0],
+            [3, 0, 7, 0, 11, 0, 15],
         ],
         (0, 0),
-        (4, 4),
+        (6, 6),
         None,
     )
     solution = Solution()
     test = Visualizer(maze, solution)
 
-    # print("=== no color ===")
     test.draw()
 
     # test.change_color(
