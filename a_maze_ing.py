@@ -2,6 +2,7 @@ from collections import deque
 
 Coord = tuple[int, int]
 
+
 class MazeSolver:
     """Solve a maze using BFS."""
 
