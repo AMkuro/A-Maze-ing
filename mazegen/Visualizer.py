@@ -64,7 +64,6 @@ class Visualizer:
             | padded[np.ix_(per, pec - 1)]
             | padded[np.ix_(per, pec + 1)]
         )
-        print(canvas)
         return canvas
 
     def _render_to_string(self, buffer: np.ndarray) -> str:
