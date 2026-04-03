@@ -12,7 +12,6 @@ class MazeValidator:
         grid: list[list[int]] = maze.grid
         width: int = maze.width
         height: int = maze.height
-        # 植木算
         for r in range(width):
             for c in range(height):
                 east_to_west: bool = True
@@ -66,10 +65,6 @@ class MazeValidator:
         west_bound: bool = all(grid[c][0] & WEST for c in range(height))
         if not (north_bound and south_bound and east_bound and west_bound):
             raise ValueError("There is hole at the external borders.")
-
-    @staticmethod
-    def _check_connectivity(maze: "Maze") -> None:
-        pass
 
     @staticmethod
     def _check_isolated_cells(maze: "Maze") -> None:
