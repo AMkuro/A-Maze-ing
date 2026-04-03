@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import sys
 from typing import Callable
-import numpy as np
 
 NORTH = 1 << 0
 EAST = 1 << 1
@@ -41,89 +40,183 @@ class Visualizer:
         self._solution = solution
         self._show_path: bool = False
         self._color_scheme: ColorScheme = ColorScheme()
+        self._render_ratio_cache: (
+            tuple[
+                list[tuple[int | None, int | None]],
+                list[tuple[int | None, int | None]],
+            ]
+            | None
+        ) = None
 
-    def _build_render_buffer(self) -> np.ndarray:
+    def _make_src_pairs(
+        self,
+        size: int,
+        even_repeat: int,
+        odd_repeat: int,
+    ) -> list[tuple[int | None, int | None]]:
+        expanded: list[int | None] = []
+
+        for i in range(size):
+            repeat = even_repeat if i % 2 == 0 else odd_repeat
+            for _ in range(repeat):
+                expanded.append(i)
+
+        if len(expanded) % 2 == 1:
+            expanded.append(None)
+
+        pairs: list[tuple[int | None, int | None]] = []
+        for i in range(0, len(expanded), 2):
+            pairs.append((expanded[i], expanded[i + 1]))
+        return pairs
+
+    def _get_render_pairs(
+        self,
+    ) -> tuple[
+        list[tuple[int | None, int | None]],
+        list[tuple[int | None, int | None]],
+    ]:
+        if self._render_ratio_cache is None:
+            src_rows = 2 * self._maze.height + 1
+            src_cols = 2 * self._maze.width + 1
+            row_pairs = self._make_src_pairs(
+                src_rows, even_repeat=1, odd_repeat=2
+            )
+            col_pairs = self._make_src_pairs(
+                src_cols, even_repeat=1, odd_repeat=5
+            )
+            self._render_ratio_cache = (row_pairs, col_pairs)
+
+        return self._render_ratio_cache
+
+    def _build_render_buffer(self) -> list[bytearray]:
         maze = self._maze
         w, h = maze.width, maze.height
-        grid = np.array(maze.grid, dtype=np.uint8)
-        canvas = np.ones((2 * h + 1, 2 * w + 1), dtype=bool)
+        grid = maze.grid
 
-        canvas[1::2, 1::2] = False
-        canvas[0:2 * h:2, 1::2] = (grid & NORTH) != 0
-        canvas[2 * h, 1::2] = (grid[-1] & SOUTH) != 0
-        canvas[1::2, 0:2 * w:2] = (grid & WEST) != 0
-        canvas[1::2, 2 * w] = (grid[:, -1] & EAST) != 0
+        t_row = 2 * h + 1
+        t_col = 2 * w + 1
+        # bytearray combines
+        # mutability with a contiguous memory layout,
+        # so it's faster then bytes and list.
+        canvas: list[bytearray] = [bytearray(t_col) for _ in range(t_row)]
 
-        padded = np.pad(canvas, 1, constant_values=False)
-        er = np.arange(0, 2 * h + 1, 2)
-        ec = np.arange(0, 2 * w + 1, 2)
-        per, pec = er + 1, ec + 1
-        canvas[np.ix_(er, ec)] = (
-            padded[np.ix_(per - 1, pec)]
-            | padded[np.ix_(per + 1, pec)]
-            | padded[np.ix_(per, pec - 1)]
-            | padded[np.ix_(per, pec + 1)]
-        )
+        set_of_wall = b"\x01\x01\x01"
+
+        for r in range(h):
+            grid_row = grid[r]
+            top = 2 * r
+            center_r = top + 1
+            bottom = top + 2
+
+            row_top = canvas[top]
+            row_center = canvas[center_r]
+            row_bottom = canvas[bottom]
+            for c in range(w):
+                cell = grid_row[c]
+                left = 2 * c
+
+                # North Wall
+                if cell & NORTH:
+                    row_top[left:left + 3] = set_of_wall
+
+                # West Wall
+                if cell & WEST:
+                    row_top[left] = 1
+                    row_center[left] = 1
+                    row_bottom[left] = 1
+
+        # The last row for setting South Wall
+        last_grid_row = grid[h - 1]
+        last_canvas_row = canvas[-1]
+        for c in range(w):
+            if last_grid_row[c] & SOUTH:
+                left = 2 * c
+                last_canvas_row[left:left + 3] = set_of_wall
+
+        # The last column for setting East Wall
+        right_col = -1
+        for r in range(h):
+            if grid[r][w - 1] & EAST:
+                top = 2 * r
+                center_r = top + 1
+                bottom = top + 2
+                canvas[top][right_col] = 1
+                canvas[center_r][right_col] = 1
+                canvas[bottom][right_col] = 1
         return canvas
 
-    def _render_to_string(self, buffer: np.ndarray) -> str:
-        LOOKUP = np.array(
-            [
-                " ",
-                "▗",
-                "▖",
-                "▄",
-                "▝",
-                "▐",
-                "▞",
-                "▟",
-                "▘",
-                "▚",
-                "▌",
-                "▙",
-                "▀",
-                "▜",
-                "▛",
-                "█",
-            ],
-            dtype="<U1",
+    def _build_char_grid_and_idx(
+        self, buffer: list[bytearray]
+    ) -> tuple[list[list[str]], list[bytearray]]:
+        LOOKUP: tuple[str, ...] = (
+            " ",
+            "▗",
+            "▖",
+            "▄",
+            "▝",
+            "▐",
+            "▞",
+            "▟",
+            "▘",
+            "▚",
+            "▌",
+            "▙",
+            "▀",
+            "▜",
+            "▛",
+            "█",
         )
 
-        rows, cols = buffer.shape
-        row_idx = np.array(
-            [r for r in range(rows) for _ in range(1 if r % 2 == 0 else 2)]
-        )
-        col_idx = np.array(
-            [c for c in range(cols) for _ in range(1 if c % 2 == 0 else 5)]
-        )
-        buf = buffer[np.ix_(row_idx, col_idx)].astype(np.uint8)
-        buf = np.pad(
-            buf,
-            ((0, buf.shape[0] % 2), (0, buf.shape[1] % 2)),
-            constant_values=0,
-        )
-        tl = buf[0::2, 0::2]
-        tr = buf[0::2, 1::2]
-        bl = buf[1::2, 0::2]
-        br = buf[1::2, 1::2]
-        idx = (tl << 3) | (tr << 2) | (bl << 1) | br
+        row_pairs, col_pairs = self._get_render_pairs()
 
-        char_grid = LOOKUP[idx]
+        src_cols = len(buffer[0])
+        zero_row = b"\x00" * src_cols
 
-        return self._apply_color(char_grid, idx, row_idx, col_idx)
+        char_grid: list[list[str]] = []
+        idx_grid: list[bytearray] = []
+
+        for top_src, bottom_src in row_pairs:
+            top_row = zero_row if top_src is None else buffer[top_src]
+            bottom_row = zero_row if bottom_src is None else buffer[bottom_src]
+
+            chars: list[str] = []
+            idx_row = bytearray()
+
+            for left_src, right_src in col_pairs:
+                tl = 0 if left_src is None else top_row[left_src]
+                tr = 0 if right_src is None else top_row[right_src]
+                bl = 0 if left_src is None else bottom_row[left_src]
+                br = 0 if right_src is None else bottom_row[right_src]
+
+                idx = (
+                    ((tl != 0) << 3)
+                    | ((tr != 0) << 2)
+                    | ((bl != 0) << 1)
+                    | (br != 0)
+                )
+
+                idx_row.append(idx)
+                chars.append(LOOKUP[idx])
+            idx_grid.append(idx_row)
+            char_grid.append(chars)
+
+        return char_grid, idx_grid
 
     def _apply_color(
         self,
-        char_grid: np.ndarray,
-        idx: np.ndarray,
-        row_idx,
-        col_idx,
+        char_grid: list[list[str]],
+        idx_grid: list[bytearray],
     ) -> str:
         wall_pre = self._color_scheme.wall
         path_pre = self._color_scheme.path
         entry_pre = self._color_scheme.entry
         exit_pre = self._color_scheme.exit
-        highlight = np.full(char_grid.shape, "", dtype=object)
+        row_pairs, col_pairs = self._get_render_pairs()
+
+        rows = len(char_grid)
+        cols = len(char_grid[0]) if rows > 0 else 0
+
+        highlight: list[list[str]] = [[""] * cols for _ in range(rows)]
 
         for (mr, mc), color in [
             (self._maze.entry, entry_pre),
@@ -131,19 +224,33 @@ class Visualizer:
         ]:
             if not color:
                 continue
-            out_rows = np.unique(np.where(row_idx == 2 * mr + 1)[0] // 2)
-            out_cols = np.unique(np.where(col_idx == 2 * mc + 1)[0] // 2)
+            target_row = 2 * mr + 1
+            target_col = 2 * mc + 1
+            out_rows = [
+                r
+                for r, (top_src, bottom_src) in enumerate(row_pairs)
+                if top_src == target_row or bottom_src == target_row
+            ]
+            out_cols = [
+                c
+                for c, (left_src, right_src) in enumerate(col_pairs)
+                if left_src == target_col or right_src == target_col
+            ]
             for r in out_rows:
+                hrow = highlight[r]
                 for c in out_cols:
-                    highlight[r, c] = color
-        last_row = char_grid.shape[0] - 1
-        last_col = char_grid.shape[1] - 1
-        lines = []
-        for r in range(char_grid.shape[0]):
-            row = []
-            for c in range(char_grid.shape[1]):
-                v = int(idx[r, c])
-                hl = highlight[r, c]
+                    hrow[c] = color
+        last_row = -1
+        last_col = -1
+        lines: list[str] = []
+        for r in range(rows):
+            out_row: list[str] = []
+            chars = char_grid[r]
+            vals = idx_grid[r]
+            hrow = highlight[r]
+            for c in range(cols):
+                v = int(vals[c])
+                hl = hrow[c]
                 suppress_bg = c == last_col or (
                     r == last_row and (v & 0b1100 == 0b1100)
                 )
@@ -151,17 +258,21 @@ class Visualizer:
                 if v == 0:
                     pre = bg
                 elif v == 15:
-                    pre = (hl or "") + wall_pre if hl else wall_pre
+                    pre = (hl + wall_pre) if hl else wall_pre
                 else:
                     pre = bg + wall_pre
-                ch = char_grid[r, c]
-                row.append(f"{pre}{ch}{RESET}" if pre else ch)
-            lines.append("".join(row))
+                ch = chars[c]
+                out_row.append(f"{pre}{ch}{RESET}" if pre else ch)
+            lines.append("".join(out_row))
         return "\n".join(lines)
+
+    def _render_to_string(self, buffer: list[bytearray]) -> str:
+        char_grid, idx_grid = self._build_char_grid_and_idx(buffer)
+        return self._apply_color(char_grid, idx_grid)
 
     def draw(self) -> None:
         """Maze と Solution を GUI に描画する"""
-        canvas: np.ndarray = self._build_render_buffer()
+        canvas: list[bytearray] = self._build_render_buffer()
         string: str = self._render_to_string(canvas)
         sys.stdout.write(string + "\n")
 
@@ -196,19 +307,17 @@ if __name__ == "__main__":
         pass
 
     maze = Maze(
-        7,
-        7,
+        5,
+        5,
         [
-            [0, 0, 4, 0, 8, 0, 12],
-            [0, 0, 0, 0, 0, 0, 0],
-            [1, 0, 5, 0, 9, 0, 13],
-            [0, 0, 0, 0, 0, 0, 0],
-            [2, 0, 6, 0, 10, 0, 14],
-            [0, 0, 0, 0, 0, 0, 0],
-            [3, 0, 7, 0, 11, 0, 15],
+            [9, 1, 1, 5, 7],
+            [10, 12, 2, 11, 11],
+            [8, 3, 14, 10, 10],
+            [10, 12, 5, 6, 10],
+            [12, 5, 5, 5, 6],
         ],
         (0, 0),
-        (6, 6),
+        (4, 4),
         None,
     )
     solution = Solution()
