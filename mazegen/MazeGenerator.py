@@ -28,7 +28,6 @@ class MazeGenerator:
         grid = MazeGenerator._init_grid(width, height)
         grid = MazeGenerator._embed_42_pattern(grid)
         grid = MazeGenerator._carve_passages(grid)
-        grid = MazeGenerator._place_entry_exit(grid, entry, exit)
 
         return Maze(
             width=width,
@@ -128,39 +127,6 @@ class MazeGenerator:
                 stack.append((ny, nx))
             else:
                 stack.pop()
-
-        return grid
-
-    @staticmethod
-    def _place_entry_exit(
-        grid: Grid,
-        entry: Pos,
-        exit: Pos,
-    ) -> Grid:
-        """Open the outer walls for entry and exit."""
-        entry_y, entry_x = entry
-        exit_y, exit_x = exit
-
-        height = len(grid)
-        width = len(grid[0])
-
-        if entry_x == 0:
-            grid[entry_y][entry_x] &= ~WEST
-        elif entry_x == width - 1:
-            grid[entry_y][entry_x] &= ~EAST
-        elif entry_y == 0:
-            grid[entry_y][entry_x] &= ~NORTH
-        elif entry_y == height - 1:
-            grid[entry_y][entry_x] &= ~SOUTH
-
-        if exit_x == 0:
-            grid[exit_y][exit_x] &= ~WEST
-        elif exit_x == width - 1:
-            grid[exit_y][exit_x] &= ~EAST
-        elif exit_y == 0:
-            grid[exit_y][exit_x] &= ~NORTH
-        elif exit_y == height - 1:
-            grid[exit_y][exit_x] &= ~SOUTH
 
         return grid
 
