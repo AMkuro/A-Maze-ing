@@ -12,6 +12,7 @@ class MazeApp:
         self._maze: Maze | None = None
         self._solution: Solution | None = None
         self._viz: Visualizer | None = None
+        self._show_path: bool = False
 
     def _load_config(self, filepath: str) -> AppConfig:
         self._config = ConfigLoader().load(filepath)
@@ -48,7 +49,7 @@ class MazeApp:
         solution: Solution = self._solve(maze)
         self._validate(maze)
         self._output(maze, solution)
-        self._viz = Visualizer(maze, solution)
+        self._viz = Visualizer(maze, solution, self._show_path)
         self._viz.draw()
 
     @staticmethod
@@ -83,7 +84,7 @@ class MazeApp:
             if cmd == "1":
                 self._on_regenerate()
             elif cmd == "2":
-                self._viz.toggle_path()
+                self._show_path = self._viz.toggle_path()
             elif cmd == "3":
                 pentadic_colors = self.get_pentadic_colors()
                 self._viz.change_color(

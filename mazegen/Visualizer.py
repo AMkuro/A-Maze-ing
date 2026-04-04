@@ -38,10 +38,12 @@ class ColorScheme:
 
 
 class Visualizer:
-    def __init__(self, maze: Maze, solution: Solution) -> None:
+    def __init__(
+        self, maze: Maze, solution: Solution, show_path: bool = False
+    ) -> None:
         self._maze = maze
         self._solution = solution
-        self._show_path: bool = False
+        self._show_path: bool = show_path
         self._color_scheme: ColorScheme = ColorScheme()
         self._render_ratio_cache: (
             tuple[
@@ -84,10 +86,10 @@ class Visualizer:
             src_rows = 2 * self._maze.height + 1
             src_cols = 2 * self._maze.width + 1
             row_pairs = self._make_src_pairs(
-                src_rows, even_repeat=1, odd_repeat=2
+                src_rows, even_repeat=1, odd_repeat=1
             )
             col_pairs = self._make_src_pairs(
-                src_cols, even_repeat=1, odd_repeat=5
+                src_cols, even_repeat=1, odd_repeat=1
             )
             self._render_ratio_cache = (row_pairs, col_pairs)
 
@@ -286,13 +288,14 @@ class Visualizer:
         string: str = self._render_to_string(canvas)
         sys.stdout.write(string + "\n")
 
-    def toggle_path(self) -> None:
+    def toggle_path(self) -> bool:
         """最短経路の表示・非表示を切り替える"""
         if not self._show_path:
             self._show_path = True
         else:
             self._show_path = False
         self.redraw()
+        return self._show_path
 
     def change_color(self, scheme: ColorScheme) -> None:
         """壁・通路・経路の配色を指定のカラースキームに変更して再描画する"""
