@@ -14,6 +14,7 @@ RESET = "\033[0m"
 class ColorScheme:
     wall: str = ""
     path: str = ""
+    solution: str = ""
     entry: str = "\033[48;2;50;200;80m"
     exit: str = "\033[48;2;220;70;60m"
 
@@ -325,25 +326,25 @@ if __name__ == "__main__":
 
     test.draw()
 
-    # test.change_color(
-    #     ColorScheme(
-    #         wall=ColorScheme.fg(100, 180, 255),
-    #         path=ColorScheme.bg(30, 30, 30),
-    #     )
-    # )
-    #
-    # print("=== RGB bg(wall) + bg(path) — wall bg bleeds into path ===")
-    # test.change_color(
-    #     ColorScheme(
-    #         wall=ColorScheme.fg(60, 60, 180),
-    #         path=ColorScheme.bg(20, 20, 20),
-    #     )
-    # )
-    #
-    # print("=== 256 color fg(wall) + bg(path) ===")
-    # test.change_color(
-    #     ColorScheme(
-    #         wall=ColorScheme.fg256(39),
-    #         path=ColorScheme.bg256(236),
-    #     )
-    # )
+    test.change_color(
+        ColorScheme(
+            wall=ColorScheme.fg(100, 180, 255),
+            path=ColorScheme.bg(30, 30, 30),
+        )
+    )
+
+    print("=== RGB bg(wall) + bg(path) — wall bg bleeds into path ===")
+    test.change_color(
+        ColorScheme(
+            wall=ColorScheme.fg(60, 60, 180),
+            path=ColorScheme.bg(20, 20, 20),
+        )
+    )
+
+    print("=== 256 color fg(wall) + bg(path) ===")
+    test.change_color(
+        ColorScheme(
+            wall=ColorScheme.fg256(39),
+            path=ColorScheme.bg256(236),
+        )
+    )
