@@ -249,9 +249,9 @@ class Visualizer:
                 hrow = highlight[r]
                 for c in out_cols:
                     hrow[c] = color
-        last_row = -1
-        last_col = -1
         lines: list[str] = []
+        last_row = rows - 1
+        last_col = cols - 1
         for r in range(rows):
             out_row: list[str] = []
             chars = char_grid[r]
@@ -260,14 +260,12 @@ class Visualizer:
             for c in range(cols):
                 v = int(vals[c])
                 hl = hrow[c]
-                suppress_bg = c == last_col or (
+                suppress_bg = (c == last_col and (v & 0b1010) == 0b1010) or (
                     r == last_row and (v & 0b1100 == 0b1100)
                 )
                 bg = "" if suppress_bg else (hl or path_pre)
                 if v == 0:
                     pre = bg
-                elif v == 15:
-                    pre = (hl + wall_pre) if hl else wall_pre
                 else:
                     pre = bg + wall_pre
                 ch = chars[c]
