@@ -49,7 +49,6 @@ class MazeGenerator:
         """Embed protected '42' cells at the maze center.
 
         The 42 cells are treated as protected wall cells.
-        They do not need to connect to the maze passages.
         """
         height = len(grid)
         width = len(grid[0])
