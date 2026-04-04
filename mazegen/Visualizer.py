@@ -39,7 +39,7 @@ class Visualizer:
     def __init__(self, maze: "Maze", solution: "Solution") -> None:
         self._maze = maze
         self._solution = solution
-        self._show_path: bool = True
+        self._show_path: bool = False
         self._color_scheme: ColorScheme = ColorScheme()
         self._render_ratio_cache: (
             tuple[
@@ -48,6 +48,8 @@ class Visualizer:
             ]
             | None
         ) = None
+        self._char_grid_cache: list[list[str]] | None = None
+        self._idx_grid_cache: list[bytearray] | None = None
 
     def _make_src_pairs(
         self,
@@ -274,6 +276,8 @@ class Visualizer:
 
     def _render_to_string(self, buffer: list[bytearray]) -> str:
         char_grid, idx_grid = self._build_char_grid_and_idx(buffer)
+        self._char_grid_cache = char_grid
+        self._idx_grid_cache = idx_grid
         return self._apply_color(char_grid, idx_grid)
 
     def draw(self) -> None:
@@ -284,12 +288,24 @@ class Visualizer:
 
     def toggle_path(self) -> None:
         """最短経路の表示・非表示を切り替える"""
-        pass
+        if not self._show_path:
+            self._show_path = True
+        else:
+            self._show_path = False
+        self.redraw()
 
     def change_color(self, scheme: ColorScheme) -> None:
         """壁・通路・経路の配色を指定のカラースキームに変更して再描画する"""
         self._color_scheme = scheme
-        self.draw()
+        self.redraw()
+
+    def redraw(self) -> None:
+        char_grid = self._char_grid_cache
+        idx_grid = self._idx_grid_cache
+        if char_grid is None or idx_grid is None:
+            return self.draw()
+        string: str = self._apply_color(char_grid, idx_grid)
+        sys.stdout.write(string + "\n")
 
     def on_regenerate(self, callback: Callable[[], None]) -> None:
         """再生成ボタン押下時に呼ばれるコールバックを登録する"""
@@ -353,6 +369,8 @@ if __name__ == "__main__":
             path=ColorScheme.bg(30, 30, 30),
         )
     )
+
+    test.toggle_path()
 
     print("=== RGB bg(wall) + bg(path) — wall bg bleeds into path ===")
     test.change_color(
