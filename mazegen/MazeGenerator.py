@@ -1,3 +1,5 @@
+import random
+
 Grid = list[list[int]]
 Pos = tuple[int, int]
 
@@ -36,8 +38,42 @@ class MazeGenerator:
 
     @staticmethod
     def _carve_passages(grid: Grid) -> Grid:
-        """Generate maze passages."""
-        raise NotImplementedError
+        """Generate maze passages using the Recursive Backtracker algorithm."""
+        height = len(grid)
+        width = len(grid[0])
+
+        stack: list[Pos] = []
+
+        start = (1, 1)
+        grid[1][1] = PASSAGE
+        stack.append(start)
+
+        directions = [(-2, 0), (2, 0), (0, -2), (0, 2)]
+
+        while stack:
+            y, x = stack[-1]
+
+            neighbors = []
+
+            for dy, dx in directions:
+                ny = y + dy
+                nx = x + dx
+
+                if 0 < ny < height and 0 < nx < width:
+                    if grid[ny][nx] == WALL:
+                        neighbors.append((ny, nx, dy, dx))
+
+            if neighbors:
+                ny, nx, dy, dx = random.choice(neighbors)
+
+                grid[y + dy // 2][x + dx // 2] = PASSAGE
+                grid[ny][nx] = PASSAGE
+
+                stack.append((ny, nx))
+            else:
+                stack.pop()
+
+        return grid
 
     @staticmethod
     def _place_entry_exit(grid: Grid) -> Grid:
@@ -53,4 +89,19 @@ class MazeGenerator:
     @staticmethod
     def _embed_42_pattern(grid: Grid) -> Grid:
         """Embed 42 pattern."""
-        raise NotImplementedError
+        return grid
+
+@staticmethod
+def _find_entry(grid: Grid) -> Pos:
+    for y in range(len(grid)):
+        if grid[y][0] == PASSAGE:
+            return (y, 0)
+    raise ValueError("Entry not found")
+
+@staticmethod
+def _find_exit(grid: Grid) -> Pos:
+    width = len(grid[0])
+    for y in range(len(grid)):
+        if grid[y][width - 1] == PASSAGE:
+            return (y, width - 1)
+    raise ValueError("Exit not found")
