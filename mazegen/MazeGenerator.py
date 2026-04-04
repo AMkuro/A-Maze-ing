@@ -99,33 +99,41 @@ class MazeGenerator:
         height = len(grid)
         width = len(grid[0])
 
-        stack: list[Pos] = []
+        start = MazeGenerator._find_start_cell(grid)
+        if start is None:
+            return grid
 
-        start = (1, 1)
-        grid[1][1] = PASSAGE
-        stack.append(start)
+        visited = [[False for _ in range(width)] for _ in range(height)]
+        stack: list[Pos] = [start]
+        visited[start[0]][start[1]] = True
 
-        directions = [(-2, 0), (2, 0), (0, -2), (0, 2)]
+        directions = [
+            (-1, 0, NORTH, SOUTH),
+            (0, 1, EAST, WEST),
+            (1, 0, SOUTH, NORTH),
+            (0, -1, WEST, EAST),
+        ]
 
         while stack:
             y, x = stack[-1]
+            neighbors: list[tuple[int, int, int, int]] = []
 
-            neighbors = []
+            for dy, dx, wall, opposite_wall in directions:
+                ny, nx = y + dy, x + dx
+                if not (0 <= ny < height and 0 <= nx < width):
+                    continue
+                if visited[ny][nx]:
+                    continue
+                if (grid[ny][nx] & WALL_42) != 0:
+                    continue
 
-            for dy, dx in directions:
-                ny = y + dy
-                nx = x + dx
-
-                if 0 < ny < height and 0 < nx < width:
-                    if grid[ny][nx] == WALL:
-                        neighbors.append((ny, nx, dy, dx))
+                neighbors.append((ny, nx, wall, opposite_wall))
 
             if neighbors:
-                ny, nx, dy, dx = random.choice(neighbors)
-
-                grid[y + dy // 2][x + dx // 2] = PASSAGE
-                grid[ny][nx] = PASSAGE
-
+                ny, nx, wall, opposite_wall = random.choice(neighbors)
+                grid[y][x] &= ~wall
+                grid[ny][nx] &= ~opposite_wall
+                visited[ny][nx] = True
                 stack.append((ny, nx))
             else:
                 stack.pop()
@@ -164,3 +172,6 @@ class MazeGenerator:
             grid[exit_y][exit_x] &= ~SOUTH
 
         return grid
+
+    @staticmethod
+    def _find_start_cell(grid: Grid) -> Pos | None:
