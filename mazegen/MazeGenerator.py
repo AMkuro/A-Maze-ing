@@ -22,11 +22,13 @@ class MazeGenerator:
 
         width = config.width
         height = config.height
+        entry = config.entry
+        exit = config.exit
 
         grid = MazeGenerator._init_grid(width, height)
         grid = MazeGenerator._embed_42_pattern(grid)
         grid = MazeGenerator._carve_passages(grid)
-        grid, entry, exit = MazeGenerator._place_entry_exit(grid)
+        grid = MazeGenerator._place_entry_exit(grid, entry, exit)
 
         return Maze(
             width=width,
@@ -131,27 +133,34 @@ class MazeGenerator:
         return grid
 
     @staticmethod
-    def _place_entry_exit(grid: Grid) -> Grid:
-        """Place maze entry and exit."""
+    def _place_entry_exit(
+        grid: Grid,
+        entry: Pos,
+        exit: Pos,
+    ) -> Grid:
+        """Open the outer walls for entry and exit."""
+        entry_y, entry_x = entry
+        exit_y, exit_x = exit
+
         height = len(grid)
         width = len(grid[0])
 
-        grid[1][0] = PASSAGE
-        grid[height - 2][width - 1] = PASSAGE
+        if entry_x == 0:
+            grid[entry_y][entry_x] &= ~WEST
+        elif entry_x == width - 1:
+            grid[entry_y][entry_x] &= ~EAST
+        elif entry_y == 0:
+            grid[entry_y][entry_x] &= ~NORTH
+        elif entry_y == height - 1:
+            grid[entry_y][entry_x] &= ~SOUTH
+
+        if exit_x == 0:
+            grid[exit_y][exit_x] &= ~WEST
+        elif exit_x == width - 1:
+            grid[exit_y][exit_x] &= ~EAST
+        elif exit_y == 0:
+            grid[exit_y][exit_x] &= ~NORTH
+        elif exit_y == height - 1:
+            grid[exit_y][exit_x] &= ~SOUTH
 
         return grid
-
-    @staticmethod
-    def _find_entry(grid: Grid) -> Pos:
-        for y in range(len(grid)):
-            if grid[y][0] == PASSAGE:
-                return (y, 0)
-        raise ValueError("Entry not found")
-
-    @staticmethod
-    def _find_exit(grid: Grid) -> Pos:
-        width = len(grid[0])
-        for y in range(len(grid)):
-            if grid[y][width - 1] == PASSAGE:
-                return (y, width - 1)
-        raise ValueError("Exit not found")
