@@ -61,28 +61,14 @@ class MazeGenerator:
             return grid
 
         pattern = [
-            # "4"
-            (-2, -3),
-            (-1, -3),
-            (0, -3),
-            (0, -2),
-            (-2, -1),
-            (-1, -1),
-            (0, -1),
-            (1, -1),
-            # "2"
-            (-2, 1),
-            (-2, 2),
-            (-2, 3),
-            (-1, 3),
-            (0, 1),
-            (0, 2),
-            (0, 3),
-            (1, 1),
-            (2, 1),
-            (2, 2),
-            (2, 3),
-        ]
+            (-2, -3), (2, -3), (3, -3), (4, -3),
+            (-2, -2), (4, -2),
+            (-2, -1), (-1, -1), (0, -1),
+
+            (2, -1), (3, -1), (4, -1),
+            (0, 0), (2, 0),
+            (0, 1), (2, 1), (3, 1), (4, 1)
+            ]
 
         for dy, dx in pattern:
             y = center_y + dy
@@ -175,3 +161,17 @@ class MazeGenerator:
 
     @staticmethod
     def _find_start_cell(grid: Grid) -> Pos | None:
+        """Return the first cell that is not part of the 42 pattern."""
+        height = len(grid)
+        width = len(grid[0])
+
+        for y in range(height):
+            for x in range(width):
+                if not MazeGenerator._is_42_cell(grid[y][x]):
+                    return (y, x)
+        return None
+
+    @staticmethod
+    def _is_42_cell(cell: int) -> bool:
+        """Return True if the cell is marked as a 42 protected cell."""
+        return (cell & WALL_42) != 0
