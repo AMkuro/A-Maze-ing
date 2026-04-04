@@ -52,7 +52,7 @@ class AppConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_positions(self) -> Self:
-        for name, (x, y) in (("entry", self.entry), ("exit", self.exit)):
+        for name, (y, x) in (("entry", self.entry), ("exit", self.exit)):
             if not (0 <= x < self.width and 0 <= y < self.height):
                 raise ValueError(f"{name} is out of bounds")
         if self.entry == self.exit:
