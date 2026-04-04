@@ -1,6 +1,13 @@
 from collections import deque
+from .MazeGenerator import Maze
+from dataclasses import dataclass
 
 Pos = tuple[int, int]
+
+@dataclass
+class Solution:
+    path: list[Pos]
+    news: str
 
 
 class MazeSolver:
