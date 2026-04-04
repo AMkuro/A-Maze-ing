@@ -15,8 +15,8 @@ class MazeSolver:
 
     @staticmethod
     def solve(maze: "Maze") -> "Solution":
-        start: Pos = maze.start
-        end: Pos = maze.end
+        start: Pos = maze.entryc
+        end: Pos = maze.exit
 
         came_from = MazeSolver._bfs(maze, start, end)
 
@@ -52,6 +52,9 @@ class MazeSolver:
                 neighbor: Pos = (ny, nx)
 
                 if neighbor in came_from:
+                    continue
+
+                if not (0 <= ny < maze.height and 0 <= nx < maze.width):
                     continue
 
                 if not maze.is_open(ny, nx):
