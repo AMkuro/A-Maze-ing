@@ -75,13 +75,10 @@ class Visualizer:
 
     def _get_render_pairs(
         self,
-    ) -> (
-        tuple[
-            list[tuple[int | None, int | None]],
-            list[tuple[int | None, int | None]],
-        ]
-        | None
-    ):
+    ) -> tuple[
+        list[tuple[int | None, int | None]],
+        list[tuple[int | None, int | None]],
+    ]:
         if self._render_ratio_cache is None and not self._changed:
             src_rows = 2 * self._maze.height + 1
             src_cols = 2 * self._maze.width + 1
