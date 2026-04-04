@@ -14,7 +14,7 @@ RESET = "\033[0m"
 class ColorScheme:
     wall: str = ""
     path: str = ""
-    solution: str = ""
+    solution: str = "\033[48;2;56;73;225m"
     entry: str = "\033[48;2;50;200;80m"
     exit: str = "\033[48;2;220;70;60m"
 
@@ -39,7 +39,7 @@ class Visualizer:
     def __init__(self, maze: "Maze", solution: "Solution") -> None:
         self._maze = maze
         self._solution = solution
-        self._show_path: bool = False
+        self._show_path: bool = True
         self._color_scheme: ColorScheme = ColorScheme()
         self._render_ratio_cache: (
             tuple[
@@ -212,6 +212,7 @@ class Visualizer:
         path_pre = self._color_scheme.path
         entry_pre = self._color_scheme.entry
         exit_pre = self._color_scheme.exit
+        solution_pre = self._color_scheme.solution
         row_pairs, col_pairs = self._get_render_pairs()
 
         rows = len(char_grid)
@@ -220,10 +221,14 @@ class Visualizer:
         highlight: list[list[str]] = [[""] * cols for _ in range(rows)]
 
         for (mr, mc), color in [
+            (pos, solution_pre) for pos in self._solution.path
+        ] + [
             (self._maze.entry, entry_pre),
             (self._maze.exit, exit_pre),
         ]:
             if not color:
+                continue
+            if color == solution_pre and not self._show_path:
                 continue
             target_row = 2 * mr + 1
             target_col = 2 * mc + 1
@@ -304,24 +309,40 @@ if __name__ == "__main__":
         exit: tuple[int, int]
         seed: int | None
 
+    @dataclass
     class Solution:
-        pass
+        path: list[tuple[int, int]]
+        news: str
 
     maze = Maze(
-        5,
-        5,
+        6,
+        6,
         [
-            [9, 1, 1, 5, 7],
-            [10, 12, 2, 11, 11],
-            [8, 3, 14, 10, 10],
-            [10, 12, 5, 6, 10],
-            [12, 5, 5, 5, 6],
+            [9, 1, 1, 5, 7, 0],
+            [10, 12, 2, 11, 11, 0],
+            [8, 3, 14, 10, 10, 0],
+            [10, 12, 5, 6, 10, 0],
+            [8, 5, 5, 5, 6, 0],
+            [12, 5, 5, 5, 5, 3],
         ],
         (0, 0),
-        (4, 4),
+        (5, 5),
         None,
     )
-    solution = Solution()
+    solution = Solution(
+        [
+            (0, 0),
+            (1, 0),
+            (2, 0),
+            (3, 0),
+            (4, 0),
+            (4, 1),
+            (4, 2),
+            (4, 3),
+            (4, 4),
+        ],
+        "news",
+    )
     test = Visualizer(maze, solution)
 
     test.draw()
