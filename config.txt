@@ -1,11 +1,11 @@
 # 正常な設定ファイル
 # コメント行
-WIDTH=20
-HEIGHT=15
+WIDTH=100
+HEIGHT=100
 
 # スペースが含まれていてもパースできるべき
 ENTRY = 0,0
-EXIT=19,14
+EXIT=99,99
 
 OUTPUT_FILE=maze.txt
 PERFECT=True
