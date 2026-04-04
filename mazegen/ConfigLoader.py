@@ -31,7 +31,7 @@ class AppConfig(BaseModel):
             if len(parts) != 2:
                 raise ValueError("point must be x,y")
             x_str, y_str = parts
-            return (int(x_str.strip()), int(y_str.strip()))
+            return (int(y_str.strip()), int(x_str.strip()))
         return value
 
     _forbidden_file_chars: ClassVar[frozenset[str]] = frozenset(
