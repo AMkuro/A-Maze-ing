@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from .MazeGenerator import Maze
+from .MazeSolver import Solution
 import sys
 from typing import Callable
 
@@ -36,12 +38,11 @@ class ColorScheme:
 
 
 class Visualizer:
-    def __init__(self, maze: "Maze", solution: "Solution") -> None:
+    def __init__(self, maze: Maze, solution: Solution) -> None:
         self._maze = maze
         self._solution = solution
         self._show_path: bool = False
         self._color_scheme: ColorScheme = ColorScheme()
-        self._changed: bool = False
         self._render_ratio_cache: (
             tuple[
                 list[tuple[int | None, int | None]],
@@ -79,7 +80,7 @@ class Visualizer:
         list[tuple[int | None, int | None]],
         list[tuple[int | None, int | None]],
     ]:
-        if self._render_ratio_cache is None and not self._changed:
+        if self._render_ratio_cache is None:
             src_rows = 2 * self._maze.height + 1
             src_cols = 2 * self._maze.width + 1
             row_pairs = self._make_src_pairs(
@@ -308,28 +309,12 @@ class Visualizer:
 
     def on_regenerate(self, callback: Callable[[], None]) -> None:
         """再生成ボタン押下時に呼ばれるコールバックを登録する"""
-        self._changed = True
+        self._idx_grid_cache = None
+        self._char_grid_cache = None
         pass
 
 
 if __name__ == "__main__":
-
-    @dataclass
-    class Maze:
-        """Maze data structure passed to the visualizer."""
-
-        width: int
-        height: int
-        grid: list[list[int]]
-        entry: tuple[int, int]
-        exit: tuple[int, int]
-        seed: int | None
-
-    @dataclass
-    class Solution:
-        path: list[tuple[int, int]]
-        news: str
-
     maze = Maze(
         6,
         6,
