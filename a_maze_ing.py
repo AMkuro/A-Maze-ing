@@ -1,7 +1,7 @@
 from mazegen.MazeGenerator import MazeGenerator
 from mazegen.MazeSolver import MazeSolver
 from mazegen.Visualizer import Visualizer
-from mazegen.ConfigLoader import ConfigLoader, AppConfig
+from mazegen.ConfigLoader import ConfigLoader
 
 
 def main():
@@ -22,6 +22,7 @@ def main():
 
     print("\nNews string:")
     print(solution.news)
+
 
 if __name__ == "__main__":
     main()
