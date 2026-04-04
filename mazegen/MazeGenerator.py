@@ -3,21 +3,30 @@ import random
 Grid = list[list[int]]
 Pos = tuple[int, int]
 
-WALL = 1
-PASSAGE = 0
+NORTH = 1 << 0
+EAST = 1 << 1
+SOUTH = 1 << 2
+WEST = 1 << 3
+WALL_42 = 1 << 4
+
+ALL_WALLS = NORTH | EAST | SOUTH | WEST
 
 class MazeGenerator:
-    """Generate maze."""
+    """Generate maze data for the visualizer-compatible cell grid."""
 
     @staticmethod
-    def generate(config: "AppConfig") -> "Maze":
-        grid = MazeGenerator._init_grid(config.width, config.height)
-        grid = MazeGenerator._carve_passages(grid)
-        grid = MazeGenerator._place_entry_exit(grid)
-        grid = MazeGenerator._embed_42_pattern(grid)
+    def generate(config: AppConfig) -> Maze:
+        """Generate a maze from config."""
+        if config.seed is not None:
+            random.seed(config.seed)
 
-        entry = MazeGenerator._find_entry(grid)
-        exit = MazeGenerator._find_exit(grid)
+        width = config.width
+        height = config.height
+
+        grid = MazeGenerator._init_grid(width, height)
+        grid = MazeGenerator._embed_42_pattern(grid)
+        grid = MazeGenerator._carve_passages(grid)
+        grid, entry, exit = MazeGenerator._place_entry_exit(grid)
 
         return Maze(
             width=width,
@@ -30,11 +39,57 @@ class MazeGenerator:
 
     @staticmethod
     def _init_grid(width: int, height: int) -> Grid:
-        """Initialize grid filled with walls."""
-        grid_height = height * 2 + 1
-        grid_width = width * 2 + 1
+        """Initialize all cells as closed-wall cells."""
+        return [[ALL_WALLS for _ in range(width)] for _ in range(height)]
 
-        return [[WALL for _ in range(grid_width)] for _ in range(grid_height)]
+    @staticmethod
+    def _embed_42_pattern(grid: Grid) -> Grid:
+        """Embed protected '42' cells at the maze center.
+
+        The 42 cells are treated as protected wall cells.
+        They do not need to connect to the maze passages.
+        """
+        height = len(grid)
+        width = len(grid[0])
+
+        center_y = height // 2
+        center_x = width // 2
+
+        if height < 5 or width < 8:
+            return grid
+
+        pattern = [
+            # "4"
+            (-2, -3),
+            (-1, -3),
+            (0, -3),
+            (0, -2),
+            (-2, -1),
+            (-1, -1),
+            (0, -1),
+            (1, -1),
+            # "2"
+            (-2, 1),
+            (-2, 2),
+            (-2, 3),
+            (-1, 3),
+            (0, 1),
+            (0, 2),
+            (0, 3),
+            (1, 1),
+            (2, 1),
+            (2, 2),
+            (2, 3),
+        ]
+
+        for dy, dx in pattern:
+            y = center_y + dy
+            x = center_x + dx
+
+            if 0 <= y < height and 0 <= x < width:
+                grid[y][x] |= WALL_42
+
+        return grid
 
     @staticmethod
     def _carve_passages(grid: Grid) -> Grid:
@@ -87,21 +142,16 @@ class MazeGenerator:
         return grid
 
     @staticmethod
-    def _embed_42_pattern(grid: Grid) -> Grid:
-        """Embed 42 pattern."""
-        return grid
+    def _find_entry(grid: Grid) -> Pos:
+        for y in range(len(grid)):
+            if grid[y][0] == PASSAGE:
+                return (y, 0)
+        raise ValueError("Entry not found")
 
-@staticmethod
-def _find_entry(grid: Grid) -> Pos:
-    for y in range(len(grid)):
-        if grid[y][0] == PASSAGE:
-            return (y, 0)
-    raise ValueError("Entry not found")
-
-@staticmethod
-def _find_exit(grid: Grid) -> Pos:
-    width = len(grid[0])
-    for y in range(len(grid)):
-        if grid[y][width - 1] == PASSAGE:
-            return (y, width - 1)
-    raise ValueError("Exit not found")
+    @staticmethod
+    def _find_exit(grid: Grid) -> Pos:
+        width = len(grid[0])
+        for y in range(len(grid)):
+            if grid[y][width - 1] == PASSAGE:
+                return (y, width - 1)
+        raise ValueError("Exit not found")
