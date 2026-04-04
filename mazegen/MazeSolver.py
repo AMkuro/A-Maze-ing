@@ -57,9 +57,6 @@ class MazeSolver:
                 if not (0 <= ny < maze.height and 0 <= nx < maze.width):
                     continue
 
-                if not maze.is_open(ny, nx):
-                    continue
-
                 queue.append(neighbor)
                 came_from[neighbor] = (y, x)
 
