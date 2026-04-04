@@ -1,8 +1,9 @@
 from collections import deque
-from .MazeGenerator import Maze
+from .MazeGenerator import NORTH, EAST, SOUTH, WEST, Maze
 from dataclasses import dataclass
 
 Pos = tuple[int, int]
+
 
 @dataclass
 class Solution:
@@ -15,7 +16,7 @@ class MazeSolver:
 
     @staticmethod
     def solve(maze: "Maze") -> "Solution":
-        start: Pos = maze.entryc
+        start: Pos = maze.entry
         end: Pos = maze.exit
 
         came_from = MazeSolver._bfs(maze, start, end)
@@ -35,10 +36,17 @@ class MazeSolver:
         end: Pos,
     ) -> dict[Pos, Pos | None]:
 
-        queue = deque([start])
+        queue = deque()
+        queue.append((start[0], start[1]))
+        grid = maze.grid
         came_from: dict[Pos, Pos | None] = {start: None}
 
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        directions = [
+            (-1, 0, NORTH),
+            (1, 0, SOUTH),
+            (0, -1, WEST),
+            (0, 1, EAST),
+        ]
 
         while queue:
             y, x = queue.popleft()
@@ -46,22 +54,19 @@ class MazeSolver:
             if (y, x) == end:
                 break
 
-            for dy, dx in directions:
-                ny = y + dy
-                nx = x + dx
+            for dy, dx, direction in directions:
+                ny, nx = y + dy, x + dx
                 neighbor: Pos = (ny, nx)
 
                 if neighbor in came_from:
                     continue
 
-                if not (0 <= ny < maze.height and 0 <= nx < maze.width):
-                    continue
+                if 0 <= ny < maze.height and 0 <= nx < maze.width:
+                    if grid[y][x] & direction == direction:
+                        continue
 
-                if not maze.is_open(ny, nx):
-                    continue
-
-                queue.append(neighbor)
-                came_from[neighbor] = (y, x)
+                    queue.append(neighbor)
+                    came_from[neighbor] = (y, x)
 
         return came_from
 

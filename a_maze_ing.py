@@ -11,14 +11,12 @@ def main():
     solution = MazeSolver.solve(maze)
 
     print("Maze:")
+    print([[str(i) for i in line] for line in maze.grid])
     visualize = Visualizer(maze, solution)
     visualize.draw()
 
     print("\nSolution path:")
-    for pos in solution.path:
-        print(pos)
     visualize.toggle_path()
-    visualize.redraw()
 
     print("\nNews string:")
     print(solution.news)
