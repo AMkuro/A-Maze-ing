@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import random
 
 Grid = list[list[int]]
@@ -10,6 +11,15 @@ WEST = 1 << 3
 WALL_42 = 1 << 4
 
 ALL_WALLS = NORTH | EAST | SOUTH | WEST
+
+@dataclass
+class Maze:
+    width: int
+    height: int
+    grid: Grid
+    entry: Pos
+    exit: Pos
+    seed: int | None = None
 
 class MazeGenerator:
     """Generate maze data for the visualizer-compatible cell grid."""
