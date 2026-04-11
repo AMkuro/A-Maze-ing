@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 import random
+from .ConfigLoader import AppConfig
 
-Grid = list[list[int]]
+Grid = list[bytearray]
 Pos = tuple[int, int]
 
 NORTH = 1 << 0
@@ -12,6 +13,7 @@ WALL_42 = 1 << 4
 
 ALL_WALLS = NORTH | EAST | SOUTH | WEST
 
+
 @dataclass
 class Maze:
     width: int
@@ -21,11 +23,12 @@ class Maze:
     exit: Pos
     seed: int | None = None
 
+
 class MazeGenerator:
     """Generate maze data for the visualizer-compatible cell grid."""
 
     @staticmethod
-    def generate(config: AppConfig) -> Maze:
+    def generate(config: "AppConfig") -> Maze:
         """Generate a maze from config."""
         if config.seed is not None:
             random.seed(config.seed)
@@ -51,7 +54,9 @@ class MazeGenerator:
     @staticmethod
     def _init_grid(width: int, height: int) -> Grid:
         """Initialize all cells as closed-wall cells."""
-        return [[ALL_WALLS for _ in range(width)] for _ in range(height)]
+        return [
+            bytearray(ALL_WALLS for _ in range(width)) for _ in range(height)
+        ]
 
     @staticmethod
     def _embed_42_pattern(grid: Grid) -> Grid:
@@ -76,12 +81,17 @@ class MazeGenerator:
             (0, -1),
             (1, -1),
             (2, -1),
-
-            (-2, 1), (-2, 2), (-2, 3),
+            (-2, 1),
+            (-2, 2),
+            (-2, 3),
             (-1, 3),
-            (0, 1), (0, 2), (0, 3),
+            (0, 1),
+            (0, 2),
+            (0, 3),
             (1, 1),
-            (2, 1), (2, 2), (2, 3),
+            (2, 1),
+            (2, 2),
+            (2, 3),
         ]
 
         for dy, dx in pattern:
@@ -101,9 +111,11 @@ class MazeGenerator:
 
         start = MazeGenerator._find_start_cell(grid)
         if start is None:
-            raise ValueError("No valid starting cell found for maze generation.")
+            raise ValueError(
+                "No valid starting cell found for maze generation."
+            )
 
-        visited = [[False for _ in range(width)] for _ in range(height)]
+        visited = [bytearray(width) for _ in range(height)]
         stack: list[Pos] = [start]
         visited[start[0]][start[1]] = True
 
