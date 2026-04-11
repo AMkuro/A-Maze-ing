@@ -260,19 +260,24 @@ class Visualizer:
             chars = char_grid[r]
             vals = idx_grid[r]
             hrow = highlight[r]
+            current_pre: str = ""
             for c in range(cols):
-                v = int(vals[c])
+                v = vals[c]
                 hl = hrow[c]
                 suppress_bg = (c == last_col and (v & 0b1010) == 0b1010) or (
-                    r == last_row and (v & 0b1100 == 0b1100)
+                    r == last_row and (v & 0b1100) == 0b1100
                 )
                 bg = "" if suppress_bg else (hl or path_pre)
-                if v == 0:
-                    pre = bg
-                else:
-                    pre = bg + wall_pre
-                ch = chars[c]
-                out_row.append(f"{pre}{ch}{RESET}" if pre else ch)
+                pre = (bg + wall_pre) if v != 0 else bg
+                if pre != current_pre:
+                    if current_pre:
+                        out_row.append(RESET)
+                    if pre:
+                        out_row.append(pre)
+                    current_pre = pre
+                out_row.append(chars[c])
+            if current_pre:
+                out_row.append(RESET)
             lines.append("".join(out_row))
         return "\n".join(lines)
 
