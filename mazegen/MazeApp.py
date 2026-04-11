@@ -42,7 +42,7 @@ class MazeApp:
             if self._viz is not None:
                 self._viz.draw()
             else:
-                raise RuntimeError("Something broken Stop the program.")
+                raise RuntimeError("Something broken, Stop the program.")
 
     def _orchestra(self, app_config: AppConfig) -> None:
         maze: Maze = self._generate(app_config)
