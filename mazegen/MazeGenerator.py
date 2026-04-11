@@ -42,6 +42,9 @@ class MazeGenerator:
         grid = MazeGenerator._embed_42_pattern(grid)
         grid = MazeGenerator._carve_passages(grid)
 
+        if not config.perfect:
+            grid = MazeGenerator._make_imperfect(grid)
+
         return Maze(
             width=width,
             height=height,
