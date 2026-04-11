@@ -89,7 +89,7 @@ class MazeValidator:
                     for dx in range(2)
                     for dy in range(3)
                 )
-                if east_open or south_open:
+                if east_open and south_open:
                     raise ValueError("There is a 3*3 open area.")
 
     def validate(self, maze: "Maze") -> None:
