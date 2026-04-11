@@ -168,6 +168,97 @@ class MazeGenerator:
         return None
 
     @staticmethod
+    def _make_imperfect(grid: Grid) -> Grid:
+        """Break one wall to create an imperfect maze."""
+        height = len(grid)
+        width = len(grid[0])
+
+        directions = [
+            (-1, 0, NORTH, SOUTH),
+            (0, 1, EAST, WEST),
+            (1, 0, SOUTH, NORTH),
+            (0, -1, WEST, EAST),
+        ]
+
+        candidates: list[tuple[int, int, int, int, int, int]] = []
+
+        for y in range(height):
+            for x in range(width):
+                if MazeGenerator._is_42_cell(grid[y][x]):
+                    continue
+
+                for dy, dx, wall, opposite_wall in directions:
+                    ny = y + dy
+                    nx = x + dx
+
+                    if not (0 <= ny < height and 0 <= nx < width):
+                        continue
+                    if MazeGenerator._is_42_cell(grid[ny][nx]):
+                        continue
+
+                    if (grid[y][x] & wall) == 0:
+                        continue
+
+                    candidates.append((y, x, ny, nx, wall, opposite_wall))
+
+        random.shuffle(candidates)
+
+        for y, x, ny, nx, wall, opposite_wall in candidates:
+
+            grid[y][x] &= ~wall
+            grid[ny][nx] &= ~opposite_wall
+
+            min_y = max(0, min(y, ny) - 2)
+            max_y = min(height - 3, max(y, ny))
+
+            min_x = max(0, min(x, nx) - 2)
+            max_x = min(width - 3, max(x, nx))
+
+            bad = False
+
+            for cy in range(min_y, max_y + 1):
+                for cx in range(min_x, max_x + 1):
+                    if MazeGenerator._is_open_3x3(grid, cy, cx):
+                        bad = True
+                        break
+                if bad:
+                    break
+
+            if bad:
+                grid[y][x] |= wall
+                grid[ny][nx] |= opposite_wall
+                continue
+
+            return grid
+
+        raise ValueError("PERFECT = False but every removable wall creates a 3x3 open area.")
+
+    @staticmethod
+    def _is_open_3x3(grid: Grid, top_y: int, top_x: int) -> bool:
+        """Check if a 3x3 block is fully open internally, ignoring the 42 pattern."""
+
+        for y in range(top_y, top_y + 3):
+            for x in range(top_x, top_x + 3):
+                if MazeGenerator._is_42_cell(grid[y][x]):
+                    return False
+
+        for y in range(top_y, top_y + 3):
+            for x in range(top_x, top_x + 2):
+                if (grid[y][x] & EAST) != 0:
+                    return False
+                if (grid[y][x + 1] & WEST) != 0:
+                    return False
+
+        for y in range(top_y, top_y + 2):
+            for x in range(top_x, top_x + 3):
+                if (grid[y][x] & SOUTH) != 0:
+                    return False
+                if (grid[y + 1][x] & NORTH) != 0:
+                    return False
+
+        return True
+
+    @staticmethod
     def _is_42_cell(cell: int) -> bool:
         """Return True if the cell is marked as a 42 protected cell."""
         return (cell & WALL_42) != 0
