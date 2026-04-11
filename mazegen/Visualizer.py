@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from .MazeGenerator import Maze
 from .MazeSolver import Solution
 import sys
+from typing import Callable
 
 NORTH = 1 << 0
 EAST = 1 << 1
@@ -155,22 +156,22 @@ class Visualizer:
         self, buffer: list[bytearray]
     ) -> tuple[list[list[str]], list[bytearray]]:
         LOOKUP: tuple[str, ...] = (
-            "\x20",  # U+0020 SPACE
-            "\xe2\x96\x97",  # ▗ U+2597
-            "\xe2\x96\x96",  # ▖ U+2596
-            "\xe2\x96\x84",  # ▄ U+2584
-            "\xe2\x96\x9d",  # ▝ U+259D
-            "\xe2\x96\x90",  # ▐ U+2590
-            "\xe2\x96\x9e",  # ▞ U+259E
-            "\xe2\x96\x9f",  # ▟ U+259F
-            "\xe2\x96\x98",  # ▘ U+2598
-            "\xe2\x96\x9a",  # ▚ U+259A
-            "\xe2\x96\x8c",  # ▌ U+258C
-            "\xe2\x96\x99",  # ▙ U+2599
-            "\xe2\x96\x80",  # ▀ U+2580
-            "\xe2\x96\x9c",  # ▜ U+259C
-            "\xe2\x96\x9b",  # ▛ U+259B
-            "\xe2\x96\x88",  # █ U+2588
+            " ",
+            "▗",
+            "▖",
+            "▄",
+            "▝",
+            "▐",
+            "▞",
+            "▟",
+            "▘",
+            "▚",
+            "▌",
+            "▙",
+            "▀",
+            "▜",
+            "▛",
+            "█",
         )
 
         row_pairs, col_pairs = self._get_render_pairs()
@@ -308,6 +309,12 @@ class Visualizer:
             return self.draw()
         string: str = self._apply_color(char_grid, idx_grid)
         sys.stdout.write(string + "\n")
+
+    def on_regenerate(self, callback: Callable[[], None]) -> None:
+        """再生成ボタン押下時に呼ばれるコールバックを登録する"""
+        self._idx_grid_cache = None
+        self._char_grid_cache = None
+        pass
 
 
 if __name__ == "__main__":
