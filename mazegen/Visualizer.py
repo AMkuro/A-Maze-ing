@@ -86,10 +86,10 @@ class Visualizer:
             src_rows = 2 * self._maze.height + 1
             src_cols = 2 * self._maze.width + 1
             row_pairs = self._make_src_pairs(
-                src_rows, even_repeat=1, odd_repeat=1
+                src_rows, even_repeat=1, odd_repeat=2
             )
             col_pairs = self._make_src_pairs(
-                src_cols, even_repeat=1, odd_repeat=1
+                src_cols, even_repeat=1, odd_repeat=5
             )
             self._render_ratio_cache = (row_pairs, col_pairs)
 
