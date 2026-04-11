@@ -308,7 +308,8 @@ class Visualizer:
         if char_grid is None or idx_grid is None:
             return self.draw()
         string: str = self._apply_color(char_grid, idx_grid)
-        sys.stdout.write(string + "\n")
+        sys.stdout.buffer.write(string.encode("utf-8"))
+        sys.stdout.write("\n")
 
     def on_regenerate(self, callback: Callable[[], None]) -> None:
         """再生成ボタン押下時に呼ばれるコールバックを登録する"""
