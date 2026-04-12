@@ -262,4 +262,3 @@ class MazeGenerator:
     def _is_42_cell(cell: int) -> bool:
         """Return True if the cell is marked as a 42 protected cell."""
         return (cell & WALL_42) != 0
-
