@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from .MazeGenerator import Maze
 
 NORTH = 1 << 0
 EAST = 1 << 1
@@ -9,7 +9,7 @@ WEST = 1 << 3
 class MazeValidator:
     @staticmethod
     def _check_wall_consistency(maze: "Maze") -> None:
-        """隣接セル間の壁情報が双方向で一致しているか"""
+        """Check whether adjacent cells agree on shared walls."""
         grid: list[list[int]] = maze.grid
         width: int = maze.width
         height: int = maze.height
@@ -41,7 +41,7 @@ class MazeValidator:
 
     @staticmethod
     def _check_bounds(maze: "Maze") -> None:
-        """グリッドサイズが設定の範囲内か"""
+        """Check whether grid size matches width and height."""
         grid: list[list[int]] = maze.grid
         width: int = maze.width
         height: int = maze.height
@@ -58,7 +58,7 @@ class MazeValidator:
 
     @staticmethod
     def _check_outer_walls(maze: "Maze") -> None:
-        """外周がすべて壁であるか"""
+        """Check whether the outer border is fully closed."""
         width: int = maze.width
         height: int = maze.height
         grid: list[list[int]] = maze.grid
@@ -71,39 +71,34 @@ class MazeValidator:
 
     @staticmethod
     def _check_no_open_3x3(maze: "Maze") -> None:
+        """Check that no fully open 3x3 area exists."""
         grid: list[list[int]] = maze.grid
         width: int = maze.width
         height: int = maze.height
 
         if width < 3 or height < 3:
             return
-        for r in range(width - 2):
-            for c in range(height - 2):
+        for y in range(width - 2):
+            for x in range(height - 2):
                 south_open = all(
-                    not (grid[r + dy][c + dx] & SOUTH)
+                    not (grid[y + dy][x + dx] & SOUTH)
                     for dx in range(3)
                     for dy in range(2)
                 )
                 east_open = all(
-                    not (grid[r + dy][c + dx] & EAST)
+                    not (grid[y + dy][x + dx] & EAST)
                     for dx in range(2)
                     for dy in range(3)
                 )
                 if east_open and south_open:
                     raise ValueError("There is a 3*3 open area.")
 
-    def validate(self, maze: "Maze") -> None:
-        pass
+    def validate(self, maze: "Maze", perfect: bool) -> None:
+        """Run all validation checks."""
+        self._check_bounds(maze)
+        self._check_wall_consistency(maze)
+        self._check_outer_walls(maze)
+        self._check_no_open_3x3(maze)
 
-
-# 仮オキ
-
-
-@dataclass
-class Maze:
-    width: int
-    height: int
-    grid: list[list[int]]
-    entry: tuple[int, int]
-    exit: tuple[int, int]
-    seed: int | None
+        if not perfect:
+            self._check_imperfect(maze)
