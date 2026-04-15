@@ -7,6 +7,10 @@ class MazeSerializer:
     @staticmethod
     def serialize(maze: Maze, solution: Solution) -> str:
         """Return the final serialized maze output."""
+        grid_lines = MazeSerializer._format_grid(maze)
+        footer_lines = MazeSerializer._format_footer(maze, solution)
+        lines = grid_lines + [""] + footer_lines
+        return "\n".join(lines) + "\n"
 
     @staticmethod
     def _cell_to_hex(cell: int) -> str:
