@@ -16,7 +16,7 @@ class MazeSerializer:
     def _cell_to_hex(cell: int) -> str:
         """Convert one cell's lower 4 wall bits into a single hex digit."""
         val = cell & 0x0F
-        return format(val.upper())
+        return format(val, "X")
 
     @staticmethod
     def _format_grid(maze: Maze) -> list[str]:
