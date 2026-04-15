@@ -93,6 +93,26 @@ class MazeValidator:
                 if east_open and south_open:
                     raise ValueError("There is a 3*3 open area.")
 
+    @staticmethod
+    def _check_imperfect(maze: "Maze") -> None:
+        """Check that the maze contains at least one loop."""
+        width = maze.width
+        height = maze.height
+        grid = maze.grid
+
+        cell = width * height
+        edge = 0
+
+        for y in range(height):
+            for x in range(width):
+                if x + 1 < width and (grid[y][x] & EAST) == 0:
+                    edge += 1
+                if y + 1 < height and (grid[y][x] & SOUTH) == 0:
+                    edge += 1
+
+        if edge <= cell - 1:
+            raise ValueError("Maze is still perfect, but should be imperfect.")
+
     def validate(self, maze: "Maze", perfect: bool) -> None:
         """Run all validation checks."""
         self._check_bounds(maze)
