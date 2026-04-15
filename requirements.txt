@@ -3,3 +3,5 @@ flake8==7.3.0
 mypy==1.19.1
 pytest==9.0.2
 build==1.4.2
+pip
+uv
