@@ -1,15 +1,16 @@
 # 正常な設定ファイル
 # コメント行
-WIDTH=1000
-HEIGHT=1000
+
+WIDTH=300
+HEIGHT=300
 
 # スペースが含まれていてもパースできるべき
 ENTRY = 0,0
-EXIT=999,999
+EXIT=299,299
 
 OUTPUT_FILE=maze.txt
 PERFECT=True
 
 # 追加のオプション
-SEED=42
+# SEED = 42
 ALGORITHM=dfs
