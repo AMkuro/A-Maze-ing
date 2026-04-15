@@ -15,12 +15,29 @@ class MazeSerializer:
     @staticmethod
     def _cell_to_hex(cell: int) -> str:
         """Convert one cell's lower 4 wall bits into a single hex digit."""
+        val = cell & 0x0F
+        return format(val.upper())
 
     @staticmethod
     def _format_grid(maze: Maze) -> list[str]:
         """Format the maze grid into hex-encoded row strings."""
+        lines: list[str] = []
+
+        for row in maze.grid:
+            line = "".join(MazeSerializer._cell_to_hex(cell) for cell in row)
+            lines.append(line)
+
+        return lines
+
 
     @staticmethod
     def _format_footer(maze: Maze, solution: Solution) -> list[str]:
         """Format footer lines required by the project output format."""
+        entry_y, entry_x = maze.entry
+        exit_y, exit_x = maze.exit
 
+        return [
+            f"{entry_y},{entry_x}",
+            f"{exit_y},{exit_x}",
+            solution.news,
+        ]
