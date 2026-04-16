@@ -2,6 +2,7 @@ from .ConfigLoader import ConfigLoader, AppConfig
 from .MazeGenerator import Maze, MazeGenerator
 from .MazeSolver import MazeSolver, Solution
 from .Visualizer import ColorScheme, Visualizer
+from .Serializer import MazeSerializer
 import colorsys
 import random
 
