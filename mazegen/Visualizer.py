@@ -38,9 +38,7 @@ class ColorScheme:
 
 
 class Visualizer:
-    def __init__(
-        self, maze: Maze, solution: Solution, show_path: bool = False
-    ) -> None:
+    def __init__(self, maze: Maze, solution: Solution, show_path: bool = False) -> None:
         self._maze = maze
         self._solution = solution
         self._show_path: bool = show_path
@@ -85,12 +83,8 @@ class Visualizer:
         if self._render_ratio_cache is None:
             src_rows = 2 * self._maze.height + 1
             src_cols = 2 * self._maze.width + 1
-            row_pairs = self._make_src_pairs(
-                src_rows, even_repeat=1, odd_repeat=2
-            )
-            col_pairs = self._make_src_pairs(
-                src_cols, even_repeat=1, odd_repeat=5
-            )
+            row_pairs = self._make_src_pairs(src_rows, even_repeat=1, odd_repeat=2)
+            col_pairs = self._make_src_pairs(src_cols, even_repeat=1, odd_repeat=5)
             self._render_ratio_cache = (row_pairs, col_pairs)
 
         return self._render_ratio_cache
@@ -124,7 +118,7 @@ class Visualizer:
 
                 # North Wall
                 if cell & NORTH:
-                    row_top[left:left + 3] = set_of_wall
+                    row_top[left : left + 3] = set_of_wall
 
                 # West Wall
                 if cell & WEST:
@@ -138,7 +132,7 @@ class Visualizer:
         for c in range(w):
             if last_grid_row[c] & SOUTH:
                 left = 2 * c
-                last_canvas_row[left:left + 3] = set_of_wall
+                last_canvas_row[left : left + 3] = set_of_wall
 
         # The last column for setting East Wall
         right_col = -1
@@ -195,12 +189,7 @@ class Visualizer:
                 bl = 0 if left_src is None else bottom_row[left_src]
                 br = 0 if right_src is None else bottom_row[right_src]
 
-                idx = (
-                    ((tl != 0) << 3)
-                    | ((tr != 0) << 2)
-                    | ((bl != 0) << 1)
-                    | (br != 0)
-                )
+                idx = ((tl != 0) << 3) | ((tr != 0) << 2) | ((bl != 0) << 1) | (br != 0)
 
                 idx_row.append(idx)
                 chars.append(LOOKUP[idx])
@@ -226,9 +215,7 @@ class Visualizer:
 
         highlight: list[list[str]] = [[""] * cols for _ in range(rows)]
 
-        for (mr, mc), color in [
-            (pos, solution_pre) for pos in self._solution.path
-        ] + [
+        for (mr, mc), color in [(pos, solution_pre) for pos in self._solution.path] + [
             (self._maze.entry, entry_pre),
             (self._maze.exit, exit_pre),
         ]:
@@ -265,7 +252,7 @@ class Visualizer:
                 v = vals[c]
                 hl = hrow[c]
                 suppress_bg = (c == last_col and (v & 0b1010) == 0b1010) or (
-                    r == last_row and (v & 0b1100) == 0b1100
+                    r == last_row and (v & 0b1000) == 0b1000
                 )
                 bg = "" if suppress_bg else (hl or path_pre)
                 pre = (bg + wall_pre) if v != 0 else bg
