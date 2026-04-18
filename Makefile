@@ -18,7 +18,7 @@ detect-venv:
 	@set -eu; \
 	valid_dirs=""; \
 	count=0; \
-	for cfg in ./*/pyvenv.cfg; do \
+	for cfg in ./*/pyvenv.cfg ./.*/pyvenv.cfg; do \
 		[ -f "$$cfg" ] || continue; \
 		dir=$$(dirname "$$cfg"); \
 		if [ -x "$$dir/bin/python" ] && \
