@@ -34,7 +34,7 @@ class MazeApp:
     def _output(self, maze: Maze, solution: Solution) -> None:
         if self._config is None:
             raise RuntimeError("Config not loaded.")
-        
+
         serialized = MazeSerializer.serialize(maze, solution)
         output_path = self._config.output_path()
         output_path.write_text(serialized, encoding="utf-8")
