@@ -1,8 +1,10 @@
 DEFAULT_VENV_NAME := .venv
+PYTHON := $(DEFAULT_VENV_NAME)/bin/python3
+PIP := $(DEFAULT_VENV_NAME)/bin/pip
 MAIN := a_maze_ing.py
 CONFIG ?= config.txt
 
-.PHONY: help detect-venv install run debug clean lint lint-strict
+.PHONY: help install run debug clean lint lint-strict
 
 help:
 	@echo "Available targets:"
@@ -14,102 +16,61 @@ help:
 	@echo "  make lint-strict  Run flake8 and mypy --strict"
 	@echo "  make detect-venv  Show detected virtualenv name"
 
-detect-venv:
-	@set -eu; \
-	valid_dirs=""; \
-	count=0; \
-	for cfg in ./*/pyvenv.cfg ./.*/pyvenv.cfg; do \
-		[ -f "$$cfg" ] || continue; \
-		dir=$$(dirname "$$cfg"); \
-		if [ -x "$$dir/bin/python" ] && \
-		   [ -x "$$dir/bin/pip" ] && \
-		   "$$dir/bin/python" -c "import sys; raise SystemExit(0 if sys.prefix != sys.base_prefix else 1)"; then \
-			valid_dirs="$$valid_dirs $$dir"; \
-			count=$$((count + 1)); \
-		fi; \
-	done; \
-	if [ "$$count" -eq 1 ]; then \
-		set -- $$valid_dirs; \
-		printf '%s\n' "$$1"; \
-	elif [ "$$count" -eq 0 ]; then \
-		exit 0; \
-	else \
-		echo "Error: multiple valid virtualenvs found:$$valid_dirs" >&2; \
-		exit 1; \
-	fi
-# output
-# Prints one detected virtualenv directory, nothing if none, error if multiple
-
 install:
 	@set -eu; \
-	VENV_DIR="$$( $(MAKE) --no-print-directory detect-venv )"; \
-	if [ -z "$$VENV_DIR" ]; then \
-		VENV_DIR="$(DEFAULT_VENV_NAME)"; \
-		echo "Creating virtual environment in $$VENV_DIR"; \
-		python3 -m venv "$$VENV_DIR"; \
-	else \
-		echo "Using existing virtual environment: $$VENV_DIR"; \
-	fi; \
-	"$$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel; \
-	"$$VENV_DIR/bin/pip" install -r requirements.txt
-# output
-# Reuses one detected virtualenv or creates DEFAULT_VENV_NAME if none exists
+	find . -type d -name ".venv" -prune -exec rm -rf {} +; \
+	echo "Creating clean virtual environment..."; \
+	python3 -m venv $(DEFAULT_VENV_NAME); \
+	echo "Installing dependencies..."; \
+	$(PIP) install -r requirements.txt; \
+	echo "Install to virtualenv $(DEFAULT_VENV_NAME) Successful."
 
 run:
 	@set -eu; \
-	VENV_DIR="$$( $(MAKE) --no-print-directory detect-venv )"; \
-	if [ -z "$$VENV_DIR" ]; then \
+	if [! -f $(PYTHON) ]; then \
 		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
 		exit 1; \
 	fi; \
-	"$$VENV_DIR/bin/python" "$(MAIN)" "$(CONFIG)"
-# output
-# Runs a_maze_ing.py with config.txt inside the detected virtualenv
+	$(PYTHON) "$(MAIN)" "$(CONFIG)"
 
 debug:
 	@set -eu; \
-	VENV_DIR="$$( $(MAKE) --no-print-directory detect-venv )"; \
-	if [ -z "$$VENV_DIR" ]; then \
+	if [! -f $(PYTHON) ]; then \
 		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
 		exit 1; \
 	fi; \
-	"$$VENV_DIR/bin/python" -m pdb "$(MAIN)" "$(CONFIG)"
-# output
-# Runs the project with Python's built-in debugger
+	$(PYTHON) -m pdb "$(MAIN)" "$(CONFIG)"
 
 clean:
-	rm -rf .mypy_cache .pytest_cache .ruff_cache build dist
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type d -name "*.egg-info" -exec rm -rf {} +
+	@set -eu; \
+	find . -type d -name ".mypy_cache" -prune -exec rm -rf {} +; \
+	find . -type d -name ".pytest_cache" -prune -exec rm -rf {} +; \
+	find . -type d -name ".ruff_cache" -prune -exec rm -rf {} +; \
+	find . -type d -name "build" -prune -exec rm -rf {} +; \
+	find . -type d -name "dist" -prune -exec rm -rf {} +; \
+	find . -type d -name "__pycache__" -prune -exec rm -rf {} +; \
+	find . -type d -name "*.egg-info" -prune -exec rm -rf {} +; \
 	find . -type f \( -name "*.pyc" -o -name "*.pyo" \) -delete
-# output
-# Removes caches and build artifacts without deleting any virtualenv
 
 lint:
 	@set -eu; \
-	VENV_DIR="$$( $(MAKE) --no-print-directory detect-venv )"; \
-	if [ -z "$$VENV_DIR" ]; then \
+	if [! -f $(PYTHON) ]; then \
 		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
 		exit 1; \
 	fi; \
-	"$$VENV_DIR/bin/python" -m flake8 .; \
-	"$$VENV_DIR/bin/python" -m mypy . \
+	$(PYTHON) -m flake8 .; \
+	$(PYTHON) -m mypy . \
 		--warn-return-any \
 		--warn-unused-ignores \
 		--ignore-missing-imports \
 		--disallow-untyped-defs \
 		--check-untyped-defs
-# output
-# Runs flake8 and required mypy checks in the detected virtualenv
 
 lint-strict:
 	@set -eu; \
-	VENV_DIR="$$( $(MAKE) --no-print-directory detect-venv )"; \
-	if [ -z "$$VENV_DIR" ]; then \
+	if [! -f $(PYTHON) ]; then \
 		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
 		exit 1; \
 	fi; \
-	"$$VENV_DIR/bin/python" -m flake8 .; \
-	"$$VENV_DIR/bin/python" -m mypy . --strict
-# output
-# Runs flake8 and mypy --strict in the detected virtualenv
+	$(PYTHON) -m flake8 .; \
+	$(PYTHON) -m mypy . --strict
