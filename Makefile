@@ -4,7 +4,7 @@ PIP := $(DEFAULT_VENV_NAME)/bin/pip
 MAIN := a_maze_ing.py
 CONFIG ?= config.txt
 
-.PHONY: help install run debug clean lint lint-strict
+.PHONY: help install build-pkg install-pkg run debug clean lint lint-strict
 
 help:
 	@echo "Available targets:"
@@ -25,9 +25,25 @@ install:
 	$(PIP) install -r requirements.txt; \
 	echo "Install to virtualenv $(DEFAULT_VENV_NAME) Successful."
 
+build-pkg:
+	@set -eu; \
+	if [ ! -f $(PYTHON) ]; then \
+		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
+		exit 1; \
+	fi; \
+	$(PYTHON) -m build --outdir .
+
+install-pkg:
+	@set -eu; \
+	if [ ! -f $(PIP) ]; then \
+		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
+		exit 1; \
+	fi; \
+	$(PIP) install mazegen-*.whl
+
 run:
 	@set -eu; \
-	if [! -f $(PYTHON) ]; then \
+	if [ ! -f $(PYTHON) ]; then \
 		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
 		exit 1; \
 	fi; \
@@ -35,7 +51,7 @@ run:
 
 debug:
 	@set -eu; \
-	if [! -f $(PYTHON) ]; then \
+	if [ ! -f $(PYTHON) ]; then \
 		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
 		exit 1; \
 	fi; \
@@ -46,6 +62,8 @@ clean:
 	find . -type d -name ".mypy_cache" -prune -exec rm -rf {} +; \
 	find . -type d -name ".pytest_cache" -prune -exec rm -rf {} +; \
 	find . -type d -name ".ruff_cache" -prune -exec rm -rf {} +; \
+	find . -maxdepth 1 -name "mazegen-*.whl" -delete; \
+	find . -maxdepth 1 -name "mazegen-*.tar,gz" -delete; \ 
 	find . -type d -name "build" -prune -exec rm -rf {} +; \
 	find . -type d -name "dist" -prune -exec rm -rf {} +; \
 	find . -type d -name "__pycache__" -prune -exec rm -rf {} +; \
@@ -54,7 +72,7 @@ clean:
 
 lint:
 	@set -eu; \
-	if [! -f $(PYTHON) ]; then \
+	if [ ! -f $(PYTHON) ]; then \
 		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
 		exit 1; \
 	fi; \
@@ -68,7 +86,7 @@ lint:
 
 lint-strict:
 	@set -eu; \
-	if [! -f $(PYTHON) ]; then \
+	if [ ! -f $(PYTHON) ]; then \
 		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
 		exit 1; \
 	fi; \
