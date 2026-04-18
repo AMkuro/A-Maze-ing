@@ -1,7 +1,7 @@
 [project]
-name = "a-maze-ing"
+name = "mazegen"
 version = "0.1.0"
-description = "Add your description here"
+description = "Produce the maze"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -12,3 +12,8 @@ dependencies = [
     "pytest>=9.0.2",
     "typing_extensions>=4.15.0",
 ]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
