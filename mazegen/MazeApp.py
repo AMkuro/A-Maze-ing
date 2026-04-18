@@ -2,6 +2,7 @@ from .ConfigLoader import ConfigLoader, AppConfig
 from .MazeGenerator import Maze, MazeGenerator
 from .MazeSolver import MazeSolver, Solution
 from .Visualizer import ColorScheme, Visualizer
+from .MazeSerializer import MazeSerializer
 import colorsys
 import random
 
@@ -30,9 +31,13 @@ class MazeApp:
     def _validate(maze: Maze) -> None:
         pass
 
-    @staticmethod
-    def _output(maze: Maze, solution: Solution) -> None:
-        pass
+    def _output(self, maze: Maze, solution: Solution) -> None:
+        if self._config is None:
+            raise RuntimeError("Config not loaded.")
+        
+        serialized = MazeSerializer.serialize(maze, solution)
+        output_path = self._config.output_path()
+        output_path.write_text(serialized, encoding="utf-8")
 
     def _on_regenerate(self) -> None:
         app_config = self._config
