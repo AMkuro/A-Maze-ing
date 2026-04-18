@@ -78,17 +78,17 @@ class MazeValidator:
 
         if width < 3 or height < 3:
             return
-        for y in range(width - 2):
-            for x in range(height - 2):
+        for y in range(height - 2):
+            for x in range(width - 2):
                 south_open = all(
                     not (grid[y + dy][x + dx] & SOUTH)
-                    for dx in range(3)
                     for dy in range(2)
+                    for dx in range(3)
                 )
                 east_open = all(
                     not (grid[y + dy][x + dx] & EAST)
-                    for dx in range(2)
                     for dy in range(3)
+                    for dx in range(2)
                 )
                 if east_open and south_open:
                     raise ValueError("There is a 3*3 open area.")
