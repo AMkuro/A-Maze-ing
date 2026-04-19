@@ -28,11 +28,10 @@ class MazeApp:
         self._solution = MazeSolver.solve(maze)
         return self._solution
 
-    @staticmethod
-    def _validate(maze: Maze, app_config: AppConfig) -> None:
+    def _validate(self, maze: Maze, app_config: AppConfig) -> None:
         perfect: bool = app_config.perfect
         try:
-            MazeValidator.validate(maze, perfect)
+            MazeValidator().validate(maze, perfect)
         except Exception as e:
             raise e
 
