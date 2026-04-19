@@ -1,4 +1,5 @@
 from .MazeGenerator import Maze
+from .ConfigLoader import WALL_42
 
 NORTH = 1 << 0
 EAST = 1 << 1
@@ -100,15 +101,23 @@ class MazeValidator:
         height = maze.height
         grid = maze.grid
 
-        cell = width * height
+        cell = 0
         edge = 0
 
         for y in range(height):
             for x in range(width):
-                if x + 1 < width and (grid[y][x] & EAST) == 0:
-                    edge += 1
-                if y + 1 < height and (grid[y][x] & SOUTH) == 0:
-                    edge += 1
+                if grid[y][x] & WALL_42:
+                    continue
+
+                cell += 1
+
+                if x + 1 < width and not (grid[y][x + 1] & WALL_42):
+                    if (grid[y][x] & EAST) == 0:
+                        edge += 1
+
+                if y + 1 < height and not (grid[y + 1][x] & WALL_42):
+                    if (grid[y][x] & SOUTH) == 0:
+                        edge += 1
 
         if edge <= cell - 1:
             raise ValueError("Maze is still perfect, but should be imperfect.")
