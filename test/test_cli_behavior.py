@@ -25,8 +25,6 @@ def valid_config(tmp_path: Path, *, width: int = 5, height: int = 5) -> str:
             f"EXIT={width - 1},{height - 1}",
             f"OUTPUT_FILE={tmp_path / 'maze.txt'}",
             "PERFECT=True",
-            "SEED=42",
-            "ALGORITHM=dfs",
         ]
     )
 

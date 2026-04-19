@@ -21,8 +21,6 @@ def valid_config(output_file: Path) -> str:
             "EXIT=4,3",
             f"OUTPUT_FILE={output_file}",
             "PERFECT=True",
-            "ALGORITHM=dfs",
-            "DISPLAY_MODE=ascii",
         ]
     )
 
@@ -94,8 +92,7 @@ def test_load_reports_validation_errors(
     lines = valid_config(tmp_path / "maze.txt").splitlines()
     key = replacement.split("=", 1)[0]
     body = "\n".join(
-        replacement if line.startswith(f"{key}=") else line
-        for line in lines
+        replacement if line.startswith(f"{key}=") else line for line in lines
     )
     config_path = write_config(tmp_path, body)
 
