@@ -74,6 +74,7 @@ class MazeGenerator:
         center_x = width // 2
 
         if height < 5 or width < 8:
+            print('"42" pattern has omitted by the maze size.')
             return grid
 
         pattern = [
@@ -204,7 +205,6 @@ class MazeGenerator:
         random.shuffle(candidates)
 
         for y, x, ny, nx, wall, opposite_wall in candidates:
-
             grid[y][x] &= ~wall
             grid[ny][nx] &= ~opposite_wall
 
@@ -231,7 +231,9 @@ class MazeGenerator:
 
             return grid
 
-        raise ValueError("PERFECT = False but every removable wall creates a 3x3 open area.")
+        raise ValueError(
+            "PERFECT = False but every removable wall creates a 3x3 open area."
+        )
 
     @staticmethod
     def _is_open_3x3(grid: Grid, top_y: int, top_x: int) -> bool:
