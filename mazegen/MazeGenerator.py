@@ -54,6 +54,7 @@ class MazeGenerator:
         center_x = width // 2
 
         if height < 5 or width < 8:
+            print('"42" pattern has omitted by the maze size.')
             return grid
 
         pattern = [
