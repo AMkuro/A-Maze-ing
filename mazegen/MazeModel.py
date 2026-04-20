@@ -14,6 +14,12 @@ class Wall:
 
 
 @dataclass
+class Solution:
+    path: list[Pos]
+    news: str
+
+
+@dataclass
 class Maze:
     width: int
     height: int

@@ -1,12 +1,5 @@
 from collections import deque
-from .MazeModel import Maze, Wall, Pos
-from dataclasses import dataclass
-
-
-@dataclass
-class Solution:
-    path: list[Pos]
-    news: str
+from .MazeModel import Maze, Wall, Pos, Solution
 
 
 class MazeSolver:
