@@ -79,7 +79,7 @@ class MazeGenerator:
             (2, 3),
         }
 
-        if height < 5 or width < 8:
+        if height <= 5 or width <= 7:
             print('"42" pattern has omitted by the maze size.')
             return grid
 
