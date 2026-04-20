@@ -1,9 +1,4 @@
-from .MazeGenerator import Maze
-
-NORTH = 1 << 0
-EAST = 1 << 1
-SOUTH = 1 << 2
-WEST = 1 << 3
+from .MazeModel import Maze, Wall
 
 
 class MazeValidator:
@@ -25,12 +20,14 @@ class MazeValidator:
                 cell = grid[y][x]
 
                 if x + 1 < width and (
-                    has_wall(cell, EAST) != has_wall(grid[y][x + 1], WEST)
+                    has_wall(cell, Wall.EAST)
+                    != has_wall(grid[y][x + 1], Wall.WEST)
                 ):
                     raise ValueError(f"Wall Consistency Error:pos ({x},{y})")
 
                 if y + 1 < height and (
-                    has_wall(cell, SOUTH) != has_wall(grid[y + 1][x], NORTH)
+                    has_wall(cell, Wall.SOUTH)
+                    != has_wall(grid[y + 1][x], Wall.NORTH)
                 ):
                     raise ValueError(f"Wall Consistency Error:pos ({x},{y})")
 
@@ -57,10 +54,10 @@ class MazeValidator:
         width: int = maze.width
         height: int = maze.height
         grid: list[bytearray] = maze.grid
-        north_bound: bool = all(grid[0][r] & NORTH for r in range(width))
-        south_bound: bool = all(grid[-1][r] & SOUTH for r in range(width))
-        east_bound: bool = all(grid[c][-1] & EAST for c in range(height))
-        west_bound: bool = all(grid[c][0] & WEST for c in range(height))
+        north_bound: bool = all(grid[0][r] & Wall.NORTH for r in range(width))
+        south_bound: bool = all(grid[-1][r] & Wall.SOUTH for r in range(width))
+        east_bound: bool = all(grid[c][-1] & Wall.EAST for c in range(height))
+        west_bound: bool = all(grid[c][0] & Wall.WEST for c in range(height))
         if not (north_bound and south_bound and east_bound and west_bound):
             raise ValueError("There is hole at the external borders.")
 
@@ -76,12 +73,12 @@ class MazeValidator:
         for y in range(height - 2):
             for x in range(width - 2):
                 south_open = all(
-                    not (grid[y + dy][x + dx] & SOUTH)
+                    not (grid[y + dy][x + dx] & Wall.SOUTH)
                     for dy in range(2)
                     for dx in range(3)
                 )
                 east_open = all(
-                    not (grid[y + dy][x + dx] & EAST)
+                    not (grid[y + dy][x + dx] & Wall.EAST)
                     for dy in range(3)
                     for dx in range(2)
                 )
@@ -95,15 +92,23 @@ class MazeValidator:
         height = maze.height
         grid = maze.grid
 
-        cell = width * height
+        cell = 0
         edge = 0
 
         for y in range(height):
             for x in range(width):
-                if x + 1 < width and (grid[y][x] & EAST) == 0:
-                    edge += 1
-                if y + 1 < height and (grid[y][x] & SOUTH) == 0:
-                    edge += 1
+                if grid[y][x] & Wall.WALL_42:
+                    continue
+
+                cell += 1
+
+                if x + 1 < width and not (grid[y][x + 1] & Wall.WALL_42):
+                    if (grid[y][x] & Wall.EAST) == 0:
+                        edge += 1
+
+                if y + 1 < height and not (grid[y + 1][x] & Wall.WALL_42):
+                    if (grid[y][x] & Wall.SOUTH) == 0:
+                        edge += 1
 
         if edge <= cell - 1:
             raise ValueError("Maze is still perfect, but should be imperfect.")
