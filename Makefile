@@ -63,7 +63,7 @@ clean:
 	find . -type d -name ".pytest_cache" -prune -exec rm -rf {} +; \
 	find . -type d -name ".ruff_cache" -prune -exec rm -rf {} +; \
 	find . -maxdepth 1 -name "mazegen-*.whl" -delete; \
-	find . -maxdepth 1 -name "mazegen-*.tar,gz" -delete; \ 
+	find . -maxdepth 1 -name "mazegen-*.tar.gz" -delete; \
 	find . -type d -name "build" -prune -exec rm -rf {} +; \
 	find . -type d -name "dist" -prune -exec rm -rf {} +; \
 	find . -type d -name "__pycache__" -prune -exec rm -rf {} +; \
