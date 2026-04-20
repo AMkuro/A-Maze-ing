@@ -2,6 +2,8 @@ import random
 from .ConfigLoader import AppConfig
 from .MazeModel import Maze, Grid, Pos, Wall
 
+GateWay = set[tuple[int, int]]
+
 
 class MazeGenerator:
     """Generate maze data for the visualizer-compatible cell grid."""
@@ -18,7 +20,7 @@ class MazeGenerator:
         exit = config.exit
 
         grid = MazeGenerator._init_grid(width, height)
-        grid = MazeGenerator._embed_42_pattern(grid)
+        grid = MazeGenerator._embed_42_pattern(grid, {entry, exit})
         grid = MazeGenerator._carve_passages(grid)
 
         if not config.perfect:
@@ -42,7 +44,7 @@ class MazeGenerator:
         ]
 
     @staticmethod
-    def _embed_42_pattern(grid: Grid) -> Grid:
+    def _embed_42_pattern(grid: Grid, gateway: GateWay) -> Grid:
         """Embed protected '42' cells at the maze center.
 
         The 42 cells are treated as protected wall cells.
@@ -52,12 +54,11 @@ class MazeGenerator:
 
         center_y = height // 2
         center_x = width // 2
+        relative_gateway = {
+            (pos[0] - center_y, pos[1] - center_x) for pos in gateway
+        }
 
-        if height < 5 or width < 8:
-            print('"42" pattern has omitted by the maze size.')
-            return grid
-
-        pattern = [
+        pattern: set[tuple[int, int]] = {
             (-2, -3),
             (-1, -3),
             (0, -3),
@@ -76,7 +77,15 @@ class MazeGenerator:
             (2, 1),
             (2, 2),
             (2, 3),
-        ]
+        }
+
+        if height <= 5 or width <= 7:
+            print('"42" pattern has omitted by the maze size.')
+            return grid
+
+        if relative_gateway in pattern:
+            print('"42" pattern has omitted by the place of entry and exit')
+            return grid
 
         for dy, dx in pattern:
             y = center_y + dy
