@@ -37,7 +37,7 @@ class MazeSerializer:
         exit_y, exit_x = maze.exit
 
         return [
-            f"{entry_y},{entry_x}",
-            f"{exit_y},{exit_x}",
+            f"{entry_x},{entry_y}",
+            f"{exit_x},{exit_y}",
             solution.news,
         ]
