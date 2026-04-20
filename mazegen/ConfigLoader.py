@@ -31,7 +31,7 @@ class AppConfig(BaseModel):
             if len(parts) != 2:
                 raise ValueError("point must be x,y")
             x_str, y_str = parts
-            return (int(x_str.strip()), int(y_str.strip()))
+            return (int(y_str.strip()), int(x_str.strip()))
         return value
 
     _forbidden_file_chars: ClassVar[frozenset[str]] = frozenset(
@@ -52,7 +52,7 @@ class AppConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_positions(self) -> Self:
-        for name, (x, y) in (("entry", self.entry), ("exit", self.exit)):
+        for name, (y, x) in (("entry", self.entry), ("exit", self.exit)):
             if not (0 <= x < self.width and 0 <= y < self.height):
                 raise ValueError(f"{name} is out of bounds")
         if self.entry == self.exit:
