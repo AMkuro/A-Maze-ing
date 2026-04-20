@@ -1,14 +1,5 @@
 from collections import deque
-from .MazeGenerator import NORTH, EAST, SOUTH, WEST, Maze
-from dataclasses import dataclass
-
-Pos = tuple[int, int]
-
-
-@dataclass
-class Solution:
-    path: list[Pos]
-    news: str
+from .MazeModel import Maze, Wall, Pos, Solution
 
 
 class MazeSolver:
@@ -42,10 +33,10 @@ class MazeSolver:
         came_from: dict[Pos, Pos | None] = {start: None}
 
         directions = [
-            (-1, 0, NORTH),
-            (1, 0, SOUTH),
-            (0, -1, WEST),
-            (0, 1, EAST),
+            (-1, 0, Wall.NORTH),
+            (1, 0, Wall.SOUTH),
+            (0, -1, Wall.WEST),
+            (0, 1, Wall.EAST),
         ]
 
         while queue:

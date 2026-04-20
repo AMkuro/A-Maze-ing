@@ -2,6 +2,8 @@ from .ConfigLoader import ConfigLoader, AppConfig
 from .MazeGenerator import Maze, MazeGenerator
 from .MazeSolver import MazeSolver, Solution
 from .Visualizer import ColorScheme, Visualizer
+from .MazeSerializer import MazeSerializer
+from .MazeValidator import MazeValidator
 import colorsys
 import random
 
@@ -26,13 +28,20 @@ class MazeApp:
         self._solution = MazeSolver.solve(maze)
         return self._solution
 
-    @staticmethod
-    def _validate(maze: Maze) -> None:
-        pass
+    def _validate(self, maze: Maze, app_config: AppConfig) -> None:
+        perfect: bool = app_config.perfect
+        try:
+            MazeValidator().validate(maze, perfect)
+        except Exception as e:
+            raise e
 
-    @staticmethod
-    def _output(maze: Maze, solution: Solution) -> None:
-        pass
+    def _output(self, maze: Maze, solution: Solution) -> None:
+        if self._config is None:
+            raise RuntimeError("Config not loaded.")
+
+        serialized = MazeSerializer.serialize(maze, solution)
+        output_path = self._config.output_path()
+        output_path.write_text(serialized, encoding="utf-8")
 
     def _on_regenerate(self) -> None:
         app_config = self._config
@@ -47,7 +56,7 @@ class MazeApp:
     def _orchestra(self, app_config: AppConfig) -> None:
         maze: Maze = self._generate(app_config)
         solution: Solution = self._solve(maze)
-        self._validate(maze)
+        self._validate(maze, app_config)
         self._output(maze, solution)
         self._viz = Visualizer(maze, solution, self._show_path)
         self._viz.draw()

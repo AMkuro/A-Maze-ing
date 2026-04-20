@@ -1,27 +1,8 @@
-from dataclasses import dataclass
 import random
 from .ConfigLoader import AppConfig
+from .MazeModel import Maze, Grid, Pos, Wall
 
-Grid = list[bytearray]
-Pos = tuple[int, int]
-
-NORTH = 1 << 0
-EAST = 1 << 1
-SOUTH = 1 << 2
-WEST = 1 << 3
-WALL_42 = 1 << 4
-
-ALL_WALLS = NORTH | EAST | SOUTH | WEST
-
-
-@dataclass
-class Maze:
-    width: int
-    height: int
-    grid: Grid
-    entry: Pos
-    exit: Pos
-    seed: int | None = None
+GateWay = set[tuple[int, int]]
 
 
 class MazeGenerator:
@@ -39,7 +20,7 @@ class MazeGenerator:
         exit = config.exit
 
         grid = MazeGenerator._init_grid(width, height)
-        grid = MazeGenerator._embed_42_pattern(grid)
+        grid = MazeGenerator._embed_42_pattern(grid, {entry, exit})
         grid = MazeGenerator._carve_passages(grid)
 
         if not config.perfect:
@@ -58,11 +39,12 @@ class MazeGenerator:
     def _init_grid(width: int, height: int) -> Grid:
         """Initialize all cells as closed-wall cells."""
         return [
-            bytearray(ALL_WALLS for _ in range(width)) for _ in range(height)
+            bytearray(Wall.ALL_WALLS for _ in range(width))
+            for _ in range(height)
         ]
 
     @staticmethod
-    def _embed_42_pattern(grid: Grid) -> Grid:
+    def _embed_42_pattern(grid: Grid, gateway: GateWay) -> Grid:
         """Embed protected '42' cells at the maze center.
 
         The 42 cells are treated as protected wall cells.
@@ -72,11 +54,11 @@ class MazeGenerator:
 
         center_y = height // 2
         center_x = width // 2
+        relative_gateway = {
+            (pos[0] - center_y, pos[1] - center_x) for pos in gateway
+        }
 
-        if height < 5 or width < 8:
-            return grid
-
-        pattern = [
+        pattern: set[tuple[int, int]] = {
             (-2, -3),
             (-1, -3),
             (0, -3),
@@ -95,14 +77,22 @@ class MazeGenerator:
             (2, 1),
             (2, 2),
             (2, 3),
-        ]
+        }
+
+        if height <= 5 or width <= 7:
+            print('"42" pattern has omitted by the maze size.')
+            return grid
+
+        if relative_gateway in pattern:
+            print('"42" pattern has omitted by the place of entry and exit')
+            return grid
 
         for dy, dx in pattern:
             y = center_y + dy
             x = center_x + dx
 
             if 0 <= y < height and 0 <= x < width:
-                grid[y][x] |= WALL_42
+                grid[y][x] |= Wall.WALL_42
 
         return grid
 
@@ -123,10 +113,10 @@ class MazeGenerator:
         visited[start[0]][start[1]] = True
 
         directions = [
-            (-1, 0, NORTH, SOUTH),
-            (0, 1, EAST, WEST),
-            (1, 0, SOUTH, NORTH),
-            (0, -1, WEST, EAST),
+            (-1, 0, Wall.NORTH, Wall.SOUTH),
+            (0, 1, Wall.EAST, Wall.WEST),
+            (1, 0, Wall.SOUTH, Wall.NORTH),
+            (0, -1, Wall.WEST, Wall.EAST),
         ]
 
         while stack:
@@ -139,7 +129,7 @@ class MazeGenerator:
                     continue
                 if visited[ny][nx]:
                     continue
-                if (grid[ny][nx] & WALL_42) != 0:
+                if (grid[ny][nx] & Wall.WALL_42) != 0:
                     continue
 
                 neighbors.append((ny, nx, wall, opposite_wall))
@@ -174,10 +164,10 @@ class MazeGenerator:
         width = len(grid[0])
 
         directions = [
-            (-1, 0, NORTH, SOUTH),
-            (0, 1, EAST, WEST),
-            (1, 0, SOUTH, NORTH),
-            (0, -1, WEST, EAST),
+            (-1, 0, Wall.NORTH, Wall.SOUTH),
+            (0, 1, Wall.EAST, Wall.WEST),
+            (1, 0, Wall.SOUTH, Wall.NORTH),
+            (0, -1, Wall.WEST, Wall.EAST),
         ]
 
         candidates: list[tuple[int, int, int, int, int, int]] = []
@@ -204,7 +194,6 @@ class MazeGenerator:
         random.shuffle(candidates)
 
         for y, x, ny, nx, wall, opposite_wall in candidates:
-
             grid[y][x] &= ~wall
             grid[ny][nx] &= ~opposite_wall
 
@@ -231,11 +220,15 @@ class MazeGenerator:
 
             return grid
 
-        raise ValueError("PERFECT = False but every removable wall creates a 3x3 open area.")
+        raise ValueError(
+            "PERFECT = False but every removable wall creates a 3x3 open area."
+        )
 
     @staticmethod
     def _is_open_3x3(grid: Grid, top_y: int, top_x: int) -> bool:
-        """Check if a 3x3 block is fully open internally, ignoring the 42 pattern."""
+        """
+        Check if a 3x3 block is fully open internally, ignoring the 42 pattern.
+        """
 
         for y in range(top_y, top_y + 3):
             for x in range(top_x, top_x + 3):
@@ -244,16 +237,16 @@ class MazeGenerator:
 
         for y in range(top_y, top_y + 3):
             for x in range(top_x, top_x + 2):
-                if (grid[y][x] & EAST) != 0:
+                if (grid[y][x] & Wall.EAST) != 0:
                     return False
-                if (grid[y][x + 1] & WEST) != 0:
+                if (grid[y][x + 1] & Wall.WEST) != 0:
                     return False
 
         for y in range(top_y, top_y + 2):
             for x in range(top_x, top_x + 3):
-                if (grid[y][x] & SOUTH) != 0:
+                if (grid[y][x] & Wall.SOUTH) != 0:
                     return False
-                if (grid[y + 1][x] & NORTH) != 0:
+                if (grid[y + 1][x] & Wall.NORTH) != 0:
                     return False
 
         return True
@@ -261,4 +254,4 @@ class MazeGenerator:
     @staticmethod
     def _is_42_cell(cell: int) -> bool:
         """Return True if the cell is marked as a 42 protected cell."""
-        return (cell & WALL_42) != 0
+        return (cell & Wall.WALL_42) != 0
