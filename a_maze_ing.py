@@ -20,6 +20,9 @@ def main(argv: list[str]) -> int:
     except Exception as e:
         print(f"Configuration error: {e}", file=sys.stderr)
         return 1
+    except KeyboardInterrupt as e:
+        print()
+        return 0
     return 0
 
 
