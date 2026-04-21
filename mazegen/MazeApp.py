@@ -93,8 +93,12 @@ class MazeApp:
             if cmd == "1":
                 self._on_regenerate()
             elif cmd == "2":
+                if self._viz is None:
+                    raise RuntimeError("Visualizer is not initialized.")
                 self._show_path = self._viz.toggle_path()
             elif cmd == "3":
+                if self._viz is None:
+                    raise RuntimeError("Visualizer is not initialized.")
                 pentadic_colors = self.get_pentadic_colors()
                 self._viz.change_color(
                     ColorScheme(
