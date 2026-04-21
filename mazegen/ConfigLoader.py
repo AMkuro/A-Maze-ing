@@ -12,6 +12,18 @@ from typing import ClassVar
 
 
 class AppConfig(BaseModel):
+    """Validated application configuration.
+
+    Attributes:
+        width: Maze width in cells.
+        height: Maze height in cells.
+        entry: Entry position as ``(row, column)``.
+        exit: Exit position as ``(row, column)``.
+        output_file: Path where the serialized maze is written.
+        perfect: Whether the generated maze should be perfect.
+        seed: Optional seed for reproducible random generation.
+    """
+
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
     width: int = Field(gt=0)
@@ -25,6 +37,18 @@ class AppConfig(BaseModel):
     @field_validator("entry", "exit", mode="before")
     @classmethod
     def parse_point(cls, value: object) -> object:
+        """Parse an ``x,y`` config coordinate into internal row-column form.
+
+        Args:
+            value: Raw coordinate value from Pydantic.
+
+        Returns:
+            Parsed ``(row, column)`` tuple, or the original value when it is
+            already structured.
+
+        Raises:
+            ValueError: If a string value is not in ``x,y`` integer format.
+        """
         if isinstance(value, str):
             parts: list[str] = value.split(",")
             if len(parts) != 2:
@@ -47,6 +71,18 @@ class AppConfig(BaseModel):
     @field_validator("output_file")
     @classmethod
     def validate_output_file(cls, value: str) -> str:
+        """Validate the configured output filename.
+
+        Args:
+            value: Raw output filename.
+
+        Returns:
+            The validated output filename.
+
+        Raises:
+            ValueError: If the filename is empty or contains forbidden
+                characters.
+        """
         if not value.strip():
             raise ValueError("OUTPUT_FILE must not be empty.")
         bad: set[str] = set(value) & AppConfig._forbidden_file_chars
@@ -59,6 +95,15 @@ class AppConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_positions(self) -> Self:
+        """Validate entry and exit positions against the maze dimensions.
+
+        Returns:
+            The validated model instance.
+
+        Raises:
+            ValueError: If entry or exit is out of bounds, or if they point to
+                the same cell.
+        """
         for name, (y, x) in (("entry", self.entry), ("exit", self.exit)):
             if not (0 <= x < self.width and 0 <= y < self.height):
                 raise ValueError(
@@ -69,10 +114,17 @@ class AppConfig(BaseModel):
         return self
 
     def output_path(self) -> Path:
+        """Return the configured output path.
+
+        Returns:
+            Output filename converted to a ``Path``.
+        """
         return Path(self.output_file)
 
 
 class ConfigLoader:
+    """Load and validate A-Maze-ing configuration files."""
+
     key_map: dict[str, str] = {
         "WIDTH": "width",
         "HEIGHT": "height",
@@ -84,7 +136,19 @@ class ConfigLoader:
     }
 
     def load(self, filepath: str) -> AppConfig:
-        """ファイル読み込みからバリデーションまで一連の処理を実行しAppConfigを返す"""
+        """Load a config file and return a validated app configuration.
+
+        Args:
+            filepath: Path to the plain text configuration file.
+
+        Returns:
+            Validated ``AppConfig`` instance.
+
+        Raises:
+            FileNotFoundError: If the config file does not exist.
+            OSError: If the config file cannot be read.
+            ValueError: If parsing or validation fails.
+        """
         clean_lines: list[tuple[int, str]] = self._read_lines(filepath)
         parsed_lines: list[tuple[str, str]] = []
         for line_number, line in clean_lines:
@@ -94,7 +158,18 @@ class ConfigLoader:
         return self._convert_and_validate(parsed_lines)
 
     def _read_lines(self, filepath: str) -> list[tuple[int, str]]:
-        """ファイルを開き,コメント/空行を除いた行リストを返す"""
+        """Read meaningful lines from a config file.
+
+        Args:
+            filepath: Path to the configuration file.
+
+        Returns:
+            Tuples of original line number and stripped non-comment content.
+
+        Raises:
+            FileNotFoundError: If the config file does not exist.
+            OSError: If the config file cannot be read.
+        """
         processed_line: list[tuple[int, str]] = []
         try:
             with open(filepath, encoding="utf-8") as f:
@@ -114,7 +189,19 @@ class ConfigLoader:
 
     @staticmethod
     def _parse_line(line_number: int, line: str) -> tuple[str, str]:
-        """key=value形式の一行をパースしてタプルで返す"""
+        """Parse one ``KEY=VALUE`` config line.
+
+        Args:
+            line_number: Original line number in the config file.
+            line: Stripped config line content.
+
+        Returns:
+            Parsed key and value.
+
+        Raises:
+            ValueError: If the line is not ``KEY=VALUE`` or either side is
+                empty.
+        """
         key_value: list[str] = line.split("=", 1)
         if len(key_value) != 2:
             raise ValueError(
@@ -133,7 +220,14 @@ class ConfigLoader:
 
     @staticmethod
     def _check_duplicate_keys(pairs: list[tuple[str, str]]) -> None:
-        """キーの重複があれば、例外を送出する"""
+        """Reject duplicate config keys.
+
+        Args:
+            pairs: Parsed key-value pairs.
+
+        Raises:
+            ValueError: If the same key appears more than once.
+        """
         seen: set[str] = set()
         for key, _ in pairs:
             if key in seen:
@@ -142,7 +236,17 @@ class ConfigLoader:
 
     @classmethod
     def _convert_and_validate(cls, pairs: list[tuple[str, str]]) -> AppConfig:
-        """外部キーを内部名へ変換し、AppConfig を生成する。"""
+        """Convert external config keys and validate values.
+
+        Args:
+            pairs: Parsed external key-value pairs.
+
+        Returns:
+            Validated ``AppConfig`` instance.
+
+        Raises:
+            ValueError: If a key is unsupported or Pydantic validation fails.
+        """
 
         raw: dict[str, str] = {}
         for key, value in pairs:
@@ -157,6 +261,16 @@ class ConfigLoader:
 
     @classmethod
     def _validation_message(cls, error: ValidationError) -> str:
+        """Convert a Pydantic validation error to a user-facing message.
+
+        Args:
+            error: Pydantic validation error raised while building
+                ``AppConfig``.
+
+        Returns:
+            Simplified error message with the external config key when
+            available.
+        """
         first_error = error.errors()[0]
         message = str(first_error.get("msg", "Invalid configuration."))
         message = message.removeprefix("Value error, ")
@@ -174,6 +288,14 @@ class ConfigLoader:
 
     @classmethod
     def _external_key(cls, internal_key: str) -> str:
+        """Return the config-file key for an internal AppConfig field.
+
+        Args:
+            internal_key: Internal Pydantic field name.
+
+        Returns:
+            Matching external config key, or an upper-case fallback.
+        """
         for external_key, field_name in cls.key_map.items():
             if field_name == internal_key:
                 return external_key

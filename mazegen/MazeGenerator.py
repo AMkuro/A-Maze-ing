@@ -10,7 +10,18 @@ class MazeGenerator:
 
     @staticmethod
     def generate(config: "AppConfig") -> Maze:
-        """Generate a maze from config."""
+        """Generate a maze from validated configuration.
+
+        Args:
+            config: Validated application configuration.
+
+        Returns:
+            Generated maze.
+
+        Raises:
+            ValueError: If a one-cell-wide or one-cell-high maze is requested,
+                or if imperfect-maze generation cannot create a valid loop.
+        """
         if config.seed is not None:
             random.seed(config.seed)
 
@@ -39,7 +50,15 @@ class MazeGenerator:
 
     @staticmethod
     def _init_grid(width: int, height: int) -> Grid:
-        """Initialize all cells as closed-wall cells."""
+        """Initialize all cells with every wall closed.
+
+        Args:
+            width: Maze width in cells.
+            height: Maze height in cells.
+
+        Returns:
+            Grid filled with closed-wall cells.
+        """
         return [
             bytearray(Wall.ALL_WALLS for _ in range(width))
             for _ in range(height)
@@ -47,9 +66,17 @@ class MazeGenerator:
 
     @staticmethod
     def _embed_42_pattern(grid: Grid, gateway: GateWay) -> Grid:
-        """Embed protected '42' cells at the maze center.
+        """Embed protected ``42`` cells at the maze center.
 
         The 42 cells are treated as protected wall cells.
+
+        Args:
+            grid: Maze grid to mutate.
+            gateway: Entry and exit positions that must remain usable.
+
+        Returns:
+            The mutated grid. The original grid is returned unchanged when the
+            maze is too small or the pattern would overlap a gateway cell.
         """
         height = len(grid)
         width = len(grid[0])
@@ -100,7 +127,17 @@ class MazeGenerator:
 
     @staticmethod
     def _carve_passages(grid: Grid) -> Grid:
-        """Generate maze passages using the Recursive Backtracker algorithm."""
+        """Carve passages using the recursive backtracker algorithm.
+
+        Args:
+            grid: Closed-wall grid, optionally containing protected cells.
+
+        Returns:
+            Grid with carved passages.
+
+        Raises:
+            ValueError: If no non-protected starting cell exists.
+        """
         height = len(grid)
         width = len(grid[0])
 
@@ -149,7 +186,15 @@ class MazeGenerator:
 
     @staticmethod
     def _find_start_cell(grid: Grid) -> Pos | None:
-        """Return the first cell that is not part of the 42 pattern."""
+        """Find the first cell that is not part of the ``42`` pattern.
+
+        Args:
+            grid: Maze grid to scan.
+
+        Returns:
+            First usable cell position, or ``None`` when every cell is
+            protected.
+        """
         height = len(grid)
         width = len(grid[0])
 
@@ -161,7 +206,17 @@ class MazeGenerator:
 
     @staticmethod
     def _make_imperfect(grid: Grid) -> Grid:
-        """Break one wall to create an imperfect maze."""
+        """Break one wall to create an imperfect maze.
+
+        Args:
+            grid: Perfect maze grid to mutate.
+
+        Returns:
+            Grid with one additional passage that creates a loop.
+
+        Raises:
+            ValueError: If every removable wall would create a 3x3 open area.
+        """
         height = len(grid)
         width = len(grid[0])
 
@@ -228,8 +283,18 @@ class MazeGenerator:
 
     @staticmethod
     def _is_open_3x3(grid: Grid, top_y: int, top_x: int) -> bool:
-        """
-        Check if a 3x3 block is fully open internally, ignoring the 42 pattern.
+        """Check whether a 3x3 block is fully open internally.
+
+        Cells belonging to the ``42`` pattern make the block invalid for this
+        check.
+
+        Args:
+            grid: Maze grid to inspect.
+            top_y: Top row of the 3x3 block.
+            top_x: Left column of the 3x3 block.
+
+        Returns:
+            ``True`` if the block has no internal walls; otherwise ``False``.
         """
 
         for y in range(top_y, top_y + 3):
@@ -255,5 +320,12 @@ class MazeGenerator:
 
     @staticmethod
     def _is_42_cell(cell: int) -> bool:
-        """Return True if the cell is marked as a 42 protected cell."""
+        """Return whether a cell is marked as protected ``42`` data.
+
+        Args:
+            cell: Encoded cell value.
+
+        Returns:
+            ``True`` when the protected-cell bit is set.
+        """
         return (cell & Wall.WALL_42) != 0

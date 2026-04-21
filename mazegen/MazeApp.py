@@ -9,7 +9,10 @@ import random
 
 
 class MazeApp:
+    """Coordinate configuration loading, maze generation, and UI actions."""
+
     def __init__(self) -> None:
+        """Initialize empty application state."""
         self._config: AppConfig | None = None
         self._maze: Maze | None = None
         self._solution: Solution | None = None
@@ -17,18 +20,62 @@ class MazeApp:
         self._show_path: bool = False
 
     def _load_config(self, filepath: str) -> AppConfig:
+        """Load and store application configuration.
+
+        Args:
+            filepath: Path to the configuration file.
+
+        Returns:
+            Loaded configuration.
+
+        Raises:
+            FileNotFoundError: If the configuration file is missing.
+            OSError: If the configuration file cannot be read.
+            ValueError: If configuration parsing or validation fails.
+        """
         self._config = ConfigLoader().load(filepath)
         return self._config
 
     def _generate(self, config: AppConfig) -> Maze:
+        """Generate and store a maze.
+
+        Args:
+            config: Validated application configuration.
+
+        Returns:
+            Generated maze.
+
+        Raises:
+            ValueError: If maze generation fails.
+        """
         self._maze = MazeGenerator.generate(config)
         return self._maze
 
     def _solve(self, maze: Maze) -> Solution:
+        """Solve and store a maze solution.
+
+        Args:
+            maze: Maze to solve.
+
+        Returns:
+            Shortest path solution.
+
+        Raises:
+            ValueError: If no path exists.
+        """
         self._solution = MazeSolver.solve(maze)
         return self._solution
 
     def _validate(self, maze: Maze, app_config: AppConfig) -> None:
+        """Validate a generated maze.
+
+        Args:
+            maze: Maze to validate.
+            app_config: Configuration used to generate the maze.
+
+        Raises:
+            ValueError: If maze validation fails.
+        """
         perfect: bool = app_config.perfect
         try:
             MazeValidator().validate(maze, perfect)
@@ -36,6 +83,16 @@ class MazeApp:
             raise e
 
     def _output(self, maze: Maze, solution: Solution) -> None:
+        """Write serialized maze output to the configured file.
+
+        Args:
+            maze: Maze to serialize.
+            solution: Solution to include in the output footer.
+
+        Raises:
+            RuntimeError: If configuration has not been loaded.
+            OSError: If writing the output file fails.
+        """
         if self._config is None:
             raise RuntimeError("Config not loaded.")
 
@@ -44,6 +101,11 @@ class MazeApp:
         output_path.write_text(serialized, encoding="utf-8")
 
     def _on_regenerate(self) -> None:
+        """Handle the regenerate action from the interactive menu.
+
+        Raises:
+            RuntimeError: If the visualizer is unexpectedly unavailable.
+        """
         app_config = self._config
         if app_config and app_config.seed is None:
             self._orchestra(app_config)
@@ -54,6 +116,15 @@ class MazeApp:
                 raise RuntimeError("Something broken, Stop the program.")
 
     def _orchestra(self, app_config: AppConfig) -> None:
+        """Run generation, solving, validation, output, and drawing.
+
+        Args:
+            app_config: Configuration for the run.
+
+        Raises:
+            ValueError: If generation, solving, or validation fails.
+            OSError: If writing the output file fails.
+        """
         maze: Maze = self._generate(app_config)
         solution: Solution = self._solve(maze)
         self._validate(maze, app_config)
@@ -63,6 +134,11 @@ class MazeApp:
 
     @staticmethod
     def get_pentadic_colors() -> list[tuple[int, int, int]]:
+        """Generate five visually separated RGB colors.
+
+        Returns:
+            List of five ``(red, green, blue)`` color tuples.
+        """
         colors: list[tuple[int, int, int]] = []
         start_hue: float = random.random()
 
@@ -76,6 +152,18 @@ class MazeApp:
         return colors
 
     def run(self, filepath: str) -> None:
+        """Run the application and interactive menu.
+
+        Args:
+            filepath: Path to the configuration file.
+
+        Raises:
+            FileNotFoundError: If the configuration file is missing.
+            OSError: If reading the configuration or writing output fails.
+            ValueError: If configuration, generation, solving, or validation
+                fails.
+            RuntimeError: If menu actions encounter invalid application state.
+        """
         app_config: AppConfig = self._load_config(filepath)
         self._orchestra(app_config)
 

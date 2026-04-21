@@ -14,6 +14,16 @@ RESET = "\033[0m"
 
 @dataclass
 class ColorScheme:
+    """ANSI color prefixes used by the terminal visualizer.
+
+    Attributes:
+        wall: Foreground or background prefix for walls.
+        path: Background prefix for open-path cells.
+        solution: Background prefix for solution-path cells.
+        entry: Background prefix for the entry cell.
+        exit: Background prefix for the exit cell.
+    """
+
     wall: str = ""
     path: str = ""
     solution: str = "\033[48;2;56;73;225m"
@@ -22,28 +32,73 @@ class ColorScheme:
 
     @staticmethod
     def fg(r: int, g: int, b: int) -> str:
+        """Build a 24-bit ANSI foreground color prefix.
+
+        Args:
+            r: Red channel from 0 to 255.
+            g: Green channel from 0 to 255.
+            b: Blue channel from 0 to 255.
+
+        Returns:
+            ANSI escape prefix for the requested foreground color.
+        """
         return f"\033[38;2;{r};{g};{b}m"
 
     @staticmethod
     def bg(r: int, g: int, b: int) -> str:
+        """Build a 24-bit ANSI background color prefix.
+
+        Args:
+            r: Red channel from 0 to 255.
+            g: Green channel from 0 to 255.
+            b: Blue channel from 0 to 255.
+
+        Returns:
+            ANSI escape prefix for the requested background color.
+        """
         return f"\033[48;2;{r};{g};{b}m"
 
     @staticmethod
     def fg256(n: int) -> str:
+        """Build a 256-color ANSI foreground prefix.
+
+        Args:
+            n: ANSI 256-color palette index.
+
+        Returns:
+            ANSI escape prefix for the requested foreground color.
+        """
         return f"\033[38;5;{n}m"
 
     @staticmethod
     def bg256(n: int) -> str:
+        """Build a 256-color ANSI background prefix.
+
+        Args:
+            n: ANSI 256-color palette index.
+
+        Returns:
+            ANSI escape prefix for the requested background color.
+        """
         return f"\033[48;5;{n}m"
 
 
 class Visualizer:
+    """Render a maze and its solution in the terminal."""
+
     def __init__(
         self,
         maze: Maze,
         solution: Solution,
         show_path: bool = False,
     ) -> None:
+        """Initialize a visualizer.
+
+        Args:
+            maze: Maze to render.
+            solution: Solution path for the maze.
+            show_path: Whether to show the solution path initially.
+        """
         self._maze = maze
         self._solution = solution
         self._show_path: bool = show_path
@@ -64,6 +119,16 @@ class Visualizer:
         even_repeat: int,
         odd_repeat: int,
     ) -> list[tuple[int | None, int | None]]:
+        """Build source-index pairs for half-block rendering.
+
+        Args:
+            size: Number of source rows or columns.
+            even_repeat: Repetition count for wall positions.
+            odd_repeat: Repetition count for cell interior positions.
+
+        Returns:
+            Pairs of source indexes. ``None`` represents empty padding.
+        """
         expanded: list[int | None] = []
 
         for i in range(size):
@@ -85,6 +150,11 @@ class Visualizer:
         list[tuple[int | None, int | None]],
         list[tuple[int | None, int | None]],
     ]:
+        """Return cached source-index pairs for rows and columns.
+
+        Returns:
+            Row and column source-index pairs used for half-block rendering.
+        """
         if self._render_ratio_cache is None:
             src_rows = 2 * self._maze.height + 1
             src_cols = 2 * self._maze.width + 1
@@ -103,6 +173,11 @@ class Visualizer:
         return self._render_ratio_cache
 
     def _build_render_buffer(self) -> list[bytearray]:
+        """Build a binary wall canvas from the maze grid.
+
+        Returns:
+            Buffer where nonzero values represent wall pixels.
+        """
         maze = self._maze
         w, h = maze.width, maze.height
         grid = maze.grid
@@ -162,6 +237,14 @@ class Visualizer:
     def _build_char_grid_and_idx(
         self, buffer: list[bytearray]
     ) -> tuple[list[list[str]], list[bytearray]]:
+        """Convert a binary wall buffer to terminal block characters.
+
+        Args:
+            buffer: Binary wall canvas produced by ``_build_render_buffer``.
+
+        Returns:
+            Render characters and matching lookup indexes.
+        """
         LOOKUP: tuple[str, ...] = (
             " ",
             "▗",
@@ -221,6 +304,15 @@ class Visualizer:
         char_grid: list[list[str]],
         idx_grid: list[bytearray],
     ) -> str:
+        """Apply ANSI colors to rendered characters.
+
+        Args:
+            char_grid: Render characters.
+            idx_grid: Lookup indexes for the rendered characters.
+
+        Returns:
+            Colored terminal string without a trailing newline.
+        """
         wall_pre = self._color_scheme.wall
         path_pre = self._color_scheme.path
         entry_pre = self._color_scheme.entry
@@ -290,19 +382,31 @@ class Visualizer:
         return "\n".join(lines)
 
     def _render_to_string(self, buffer: list[bytearray]) -> str:
+        """Render a wall buffer to a terminal string and cache it.
+
+        Args:
+            buffer: Binary wall canvas.
+
+        Returns:
+            Colored terminal string without a trailing newline.
+        """
         char_grid, idx_grid = self._build_char_grid_and_idx(buffer)
         self._char_grid_cache = char_grid
         self._idx_grid_cache = idx_grid
         return self._apply_color(char_grid, idx_grid)
 
     def draw(self) -> None:
-        """Maze と Solution を GUI に描画する"""
+        """Draw the maze and solution to standard output."""
         canvas: list[bytearray] = self._build_render_buffer()
         string: str = self._render_to_string(canvas)
         sys.stdout.write(string + "\n")
 
     def toggle_path(self) -> bool:
-        """最短経路の表示・非表示を切り替える"""
+        """Toggle shortest-path visibility and redraw.
+
+        Returns:
+            New path visibility state.
+        """
         if not self._show_path:
             self._show_path = True
         else:
@@ -311,11 +415,16 @@ class Visualizer:
         return self._show_path
 
     def change_color(self, scheme: ColorScheme) -> None:
-        """壁・通路・経路の配色を指定のカラースキームに変更して再描画する"""
+        """Change the color scheme and redraw.
+
+        Args:
+            scheme: New color scheme.
+        """
         self._color_scheme = scheme
         self.redraw()
 
     def redraw(self) -> None:
+        """Redraw the current cached render state."""
         char_grid = self._char_grid_cache
         idx_grid = self._idx_grid_cache
         if char_grid is None or idx_grid is None:
@@ -325,7 +434,11 @@ class Visualizer:
         sys.stdout.write("\n")
 
     def on_regenerate(self, callback: Callable[[], None]) -> None:
-        """再生成ボタン押下時に呼ばれるコールバックを登録する"""
+        """Clear cached render data before regeneration.
+
+        Args:
+            callback: Regeneration callback reserved for future UI backends.
+        """
         self._idx_grid_cache = None
         self._char_grid_cache = None
         pass

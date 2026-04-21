@@ -3,6 +3,15 @@ import sys
 
 
 def main(argv: list[str]) -> int:
+    """Run the A-Maze-ing CLI.
+
+    Args:
+        argv: Command-line arguments including the program name.
+
+    Returns:
+        Process exit code. Returns 0 on success, 1 for runtime/configuration
+        errors, and 2 for invalid command-line usage.
+    """
     if len(argv) != 2:
         print("Usage: python3 a_maze_ing.py <config.txt>", file=sys.stderr)
         return 2

@@ -2,14 +2,31 @@ from .MazeModel import Maze, Wall
 
 
 class MazeValidator:
+    """Validate generated maze structure."""
+
     @staticmethod
     def _has_wall(cell: int, wall: int) -> bool:
-        """Return whether the requested wall bit is set."""
+        """Return whether the requested wall bit is set.
+
+        Args:
+            cell: Encoded cell value.
+            wall: Wall bit to test.
+
+        Returns:
+            ``True`` when the wall bit is set.
+        """
         return (cell & wall) != 0
 
     @staticmethod
     def _check_wall_consistency(maze: "Maze") -> None:
-        """Check whether adjacent cells agree on shared walls."""
+        """Check whether adjacent cells agree on shared walls.
+
+        Args:
+            maze: Maze to validate.
+
+        Raises:
+            ValueError: If neighboring cells disagree on a shared wall.
+        """
         grid: list[bytearray] = maze.grid
         width: int = maze.width
         height: int = maze.height
@@ -33,7 +50,14 @@ class MazeValidator:
 
     @staticmethod
     def _check_bounds(maze: "Maze") -> None:
-        """Check whether grid size matches width and height."""
+        """Check whether grid size matches width and height.
+
+        Args:
+            maze: Maze to validate.
+
+        Raises:
+            ValueError: If the grid dimensions do not match the maze metadata.
+        """
         grid: list[bytearray] = maze.grid
         width: int = maze.width
         height: int = maze.height
@@ -50,7 +74,14 @@ class MazeValidator:
 
     @staticmethod
     def _check_outer_walls(maze: "Maze") -> None:
-        """Check whether the outer border is fully closed."""
+        """Check whether the outer border is fully closed.
+
+        Args:
+            maze: Maze to validate.
+
+        Raises:
+            ValueError: If any external border wall is open.
+        """
         width: int = maze.width
         height: int = maze.height
         grid: list[bytearray] = maze.grid
@@ -63,7 +94,14 @@ class MazeValidator:
 
     @staticmethod
     def _check_no_open_3x3(maze: "Maze") -> None:
-        """Check that no fully open 3x3 area exists."""
+        """Check that no fully open 3x3 area exists.
+
+        Args:
+            maze: Maze to validate.
+
+        Raises:
+            ValueError: If the maze contains a fully open 3x3 area.
+        """
         grid: list[bytearray] = maze.grid
         width: int = maze.width
         height: int = maze.height
@@ -87,7 +125,14 @@ class MazeValidator:
 
     @staticmethod
     def _check_imperfect(maze: "Maze") -> None:
-        """Check that the maze contains at least one loop."""
+        """Check that the maze contains at least one loop.
+
+        Args:
+            maze: Maze to validate.
+
+        Raises:
+            ValueError: If the maze is still perfect.
+        """
         width = maze.width
         height = maze.height
         grid = maze.grid
@@ -114,7 +159,15 @@ class MazeValidator:
             raise ValueError("Maze is still perfect, but should be imperfect.")
 
     def validate(self, maze: "Maze", perfect: bool) -> None:
-        """Run all validation checks."""
+        """Run all validation checks.
+
+        Args:
+            maze: Maze to validate.
+            perfect: Whether the maze is expected to be perfect.
+
+        Raises:
+            ValueError: If any structural validation check fails.
+        """
         self._check_bounds(maze)
         self._check_wall_consistency(maze)
         self._check_outer_walls(maze)

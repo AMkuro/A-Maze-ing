@@ -8,6 +8,17 @@ class MazeSolver:
 
     @staticmethod
     def solve(maze: "Maze") -> "Solution":
+        """Find a shortest path from maze entry to exit.
+
+        Args:
+            maze: Maze to solve.
+
+        Returns:
+            Solution containing the path and N/E/W/S movement string.
+
+        Raises:
+            ValueError: If no path exists or path reconstruction fails.
+        """
         start: Pos = maze.entry
         end: Pos = maze.exit
 
@@ -27,6 +38,16 @@ class MazeSolver:
         start: Pos,
         end: Pos,
     ) -> dict[Pos, Pos | None]:
+        """Run breadth-first search over open maze passages.
+
+        Args:
+            maze: Maze to traverse.
+            start: Starting cell.
+            end: Target cell.
+
+        Returns:
+            Mapping from each reached cell to its predecessor.
+        """
 
         queue: Deque[Pos] = deque()
         queue.append((start[0], start[1]))
@@ -68,6 +89,19 @@ class MazeSolver:
         start: Pos,
         end: Pos,
     ) -> list[Pos]:
+        """Reconstruct a path from BFS predecessor data.
+
+        Args:
+            came_from: Mapping from reached cell to predecessor.
+            start: Starting cell.
+            end: Target cell.
+
+        Returns:
+            Ordered path from start to end.
+
+        Raises:
+            ValueError: If predecessor data is inconsistent.
+        """
 
         path: list[Pos] = [end]
         curr: Pos = end
@@ -84,6 +118,14 @@ class MazeSolver:
 
     @staticmethod
     def _to_news_string(path: list[Pos]) -> str:
+        """Convert a path into a movement string.
+
+        Args:
+            path: Ordered cell positions.
+
+        Returns:
+            Movement string using N, E, W, and S.
+        """
         moves: list[str] = []
 
         for i in range(1, len(path)):
