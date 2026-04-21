@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pytest
-
 from mazegen.ConfigLoader import AppConfig
 from mazegen.MazeGenerator import MazeGenerator
 from mazegen.MazeSolver import MazeSolver
@@ -28,10 +26,6 @@ def make_config(
     )
 
 
-@pytest.mark.xfail(
-    reason="The embedded 42 pattern can disconnect small 5-row mazes.",
-    strict=True,
-)
 def test_embedded_42_pattern_dimensions_stay_solvable(tmp_path: Path) -> None:
     config = make_config(tmp_path, width=8, height=5)
 
@@ -42,12 +36,6 @@ def test_embedded_42_pattern_dimensions_stay_solvable(tmp_path: Path) -> None:
     assert solution.path[-1] == maze.exit
 
 
-@pytest.mark.xfail(
-    reason=(
-        "MazeValidator compares wall bit values directly instead of booleans."
-    ),
-    strict=True,
-)
 def test_maze_validator_accepts_generated_maze(tmp_path: Path) -> None:
     config = make_config(tmp_path, width=5, height=5)
     maze = MazeGenerator.generate(config)

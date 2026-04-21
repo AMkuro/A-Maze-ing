@@ -2,8 +2,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 APP = PROJECT_ROOT / "a_maze_ing.py"
@@ -89,10 +87,6 @@ def test_output_validator_accepts_generated_output(tmp_path: Path) -> None:
     assert validator_result.stderr == ""
 
 
-@pytest.mark.xfail(
-    reason="CLI currently catches errors, prints them to stdout, and exits 0.",
-    strict=True,
-)
 def test_cli_invalid_config_reports_failure_on_stderr(tmp_path: Path) -> None:
     config_path = write_config(
         tmp_path,
@@ -106,3 +100,19 @@ def test_cli_invalid_config_reports_failure_on_stderr(tmp_path: Path) -> None:
     assert "greater than 0" in result.stderr
     assert "Traceback" not in result.stdout
     assert "Traceback" not in result.stderr
+
+
+def test_cli_missing_argument_reports_usage_on_stderr() -> None:
+    result = subprocess.run(
+        [sys.executable, str(APP)],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=PROJECT_ROOT,
+        timeout=10,
+        check=False,
+    )
+
+    assert result.returncode == 2
+    assert "Usage:" in result.stderr
+    assert result.stdout == ""

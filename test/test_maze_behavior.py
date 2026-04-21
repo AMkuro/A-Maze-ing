@@ -7,6 +7,7 @@ from mazegen.MazeGenerator import Maze, MazeGenerator
 from mazegen.MazeSerializer import MazeSerializer
 from mazegen.MazeSolver import MazeSolver
 from mazegen.Visualizer import Visualizer
+from mazegen.MazeModel import Wall
 
 
 def make_config(
@@ -106,5 +107,27 @@ def test_imperfect_maze_is_rejected_when_loop_cannot_be_created(
 ) -> None:
     config = make_config(tmp_path, width=1, height=5, perfect=False)
 
-    with pytest.raises(ValueError, match="PERFECT = False"):
+    with pytest.raises(ValueError, match="single path is not a maze"):
         MazeGenerator.generate(config)
+
+
+def test_42_pattern_does_not_close_entry_or_exit(tmp_path: Path) -> None:
+    config = AppConfig(
+        width=9,
+        height=9,
+        entry=(2, 1),
+        exit=(6, 7),
+        output_file=str(tmp_path / "maze.txt"),
+        perfect=True,
+        seed=42,
+        algorithm="dfs",
+        display_mode="ascii",
+    )
+
+    maze = MazeGenerator.generate(config)
+    solution = MazeSolver.solve(maze)
+
+    assert not maze.grid[maze.entry[0]][maze.entry[1]] & Wall.WALL_42
+    assert not maze.grid[maze.exit[0]][maze.exit[1]] & Wall.WALL_42
+    assert solution.path[0] == maze.entry
+    assert solution.path[-1] == maze.exit

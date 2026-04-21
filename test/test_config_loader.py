@@ -91,9 +91,17 @@ def test_load_reports_validation_errors(
 ) -> None:
     lines = valid_config(tmp_path / "maze.txt").splitlines()
     key = replacement.split("=", 1)[0]
-    body = "\n".join(
-        replacement if line.startswith(f"{key}=") else line for line in lines
-    )
+    replaced = False
+    output_lines: list[str] = []
+    for line in lines:
+        if line.startswith(f"{key}="):
+            output_lines.append(replacement)
+            replaced = True
+        else:
+            output_lines.append(line)
+    if not replaced:
+        output_lines.append(replacement)
+    body = "\n".join(output_lines)
     config_path = write_config(tmp_path, body)
 
     with pytest.raises(ValidationError, match=message):
