@@ -52,16 +52,12 @@ class AppConfig(BaseModel):
         if isinstance(value, str):
             parts: list[str] = value.split(",")
             if len(parts) != 2:
-                raise ValueError(
-                    "must be coordinates in x,y format."
-                )
+                raise ValueError("must be coordinates in x,y format.")
             x_str, y_str = parts
             try:
                 return (int(y_str.strip()), int(x_str.strip()))
             except ValueError:
-                raise ValueError(
-                    "must be coordinates in x,y format."
-                ) from None
+                raise ValueError("must be coordinates are integer.") from None
         return value
 
     _forbidden_file_chars: ClassVar[frozenset[str]] = frozenset(
@@ -88,8 +84,7 @@ class AppConfig(BaseModel):
         bad: set[str] = set(value) & AppConfig._forbidden_file_chars
         if bad:
             raise ValueError(
-                "OUTPUT_FILE contains invalid characters: "
-                f"{sorted(bad)!r}."
+                f"OUTPUT_FILE contains invalid characters: {sorted(bad)!r}."
             )
         return value
 
@@ -247,7 +242,6 @@ class ConfigLoader:
         Raises:
             ValueError: If a key is unsupported or Pydantic validation fails.
         """
-
         raw: dict[str, str] = {}
         for key, value in pairs:
             if key not in cls.key_map:
