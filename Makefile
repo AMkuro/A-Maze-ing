@@ -78,7 +78,7 @@ test-%:
 		exit 1; \
 	fi; \
 	echo "$$FILENAME"; \
-	"$(PYTHON)" "$(MAIN)" "$$FILENAME"
+	"$(PYTHON)" "$(MAIN)" "config/$$FILENAME"
 
 clean:
 	@set -eu; \
