@@ -72,7 +72,7 @@ test-%:
 		echo "1~$$FILECOUNT is valid." >&2; \
 		exit 1; \
 	fi; \
-	FILENAME="$$(find config -maxdepth 1 -type f | sort | sed -n "$${SUBTARGETNUM}p")"; \
+	FILENAME="$$(ls -1t --time=birth config | sed -n "$${SUBTARGETNUM}p")"; \
 	if [ ! -x "$(PYTHON)" ]; then \
 		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
 		exit 1; \
