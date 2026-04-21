@@ -13,4 +13,3 @@ PERFECT=True
 
 # 追加のオプション
 # SEED = 42
-ALGORITHM=dfs
