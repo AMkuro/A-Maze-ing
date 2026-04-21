@@ -108,7 +108,7 @@ class MazeGenerator:
             (2, 3),
         }
 
-        if height <= 5 or width <= 7:
+        if height <= 6 or width <= 8:
             print('"42" pattern has omitted by the maze size.')
             return grid
 
@@ -296,7 +296,6 @@ class MazeGenerator:
         Returns:
             ``True`` if the block has no internal walls; otherwise ``False``.
         """
-
         for y in range(top_y, top_y + 3):
             for x in range(top_x, top_x + 3):
                 if MazeGenerator._is_42_cell(grid[y][x]):
