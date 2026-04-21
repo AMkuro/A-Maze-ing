@@ -26,8 +26,6 @@ def make_config(
         output_file=str(tmp_path / "maze.txt"),
         perfect=perfect,
         seed=seed,
-        algorithm="dfs",
-        display_mode="ascii",
     )
 
 
@@ -120,8 +118,6 @@ def test_42_pattern_does_not_close_entry_or_exit(tmp_path: Path) -> None:
         output_file=str(tmp_path / "maze.txt"),
         perfect=True,
         seed=42,
-        algorithm="dfs",
-        display_mode="ascii",
     )
 
     maze = MazeGenerator.generate(config)

@@ -21,8 +21,6 @@ def make_config(
         output_file=str(tmp_path / "maze.txt"),
         perfect=perfect,
         seed=0,
-        algorithm="dfs",
-        display_mode="ascii",
     )
 
 

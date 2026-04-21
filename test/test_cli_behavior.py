@@ -96,8 +96,42 @@ def test_cli_invalid_config_reports_failure_on_stderr(tmp_path: Path) -> None:
     result = run_app(config_path)
 
     assert result.returncode != 0
-    assert "width" in result.stderr.lower()
-    assert "greater than 0" in result.stderr
+    assert result.stderr == (
+        "Configuration error: WIDTH: Input should be greater than 0\n"
+    )
+    assert result.stdout == ""
+    assert "Traceback" not in result.stderr
+
+
+def test_cli_missing_config_file_reports_clear_error(tmp_path: Path) -> None:
+    missing_path = tmp_path / "missing.txt"
+
+    result = run_app(missing_path)
+
+    assert result.returncode == 1
+    assert result.stderr == (
+        f"Configuration error: Configuration file not found: {missing_path}\n"
+    )
+    assert result.stdout == ""
+    assert "Traceback" not in result.stderr
+
+
+def test_cli_invalid_config_hides_pydantic_internals(
+    tmp_path: Path,
+) -> None:
+    config_path = write_config(
+        tmp_path,
+        valid_config(tmp_path).replace("WIDTH=5", "WIDTH=abc"),
+    )
+
+    result = run_app(config_path)
+
+    assert result.returncode == 1
+    assert result.stderr.startswith(
+        "Configuration error: WIDTH: Input should be a valid integer"
+    )
+    assert "pydantic.dev" not in result.stderr
+    assert "input_value" not in result.stderr
     assert "Traceback" not in result.stdout
     assert "Traceback" not in result.stderr
 
