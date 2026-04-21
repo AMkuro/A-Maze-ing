@@ -1,4 +1,5 @@
 from collections import deque
+from typing import Deque
 from .MazeModel import Maze, Wall, Pos, Solution
 
 
@@ -27,7 +28,7 @@ class MazeSolver:
         end: Pos,
     ) -> dict[Pos, Pos | None]:
 
-        queue = deque()
+        queue: Deque[Pos] = deque()
         queue.append((start[0], start[1]))
         grid = maze.grid
         came_from: dict[Pos, Pos | None] = {start: None}
