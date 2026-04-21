@@ -57,6 +57,29 @@ debug:
 	fi; \
 	$(PYTHON) -m pdb "$(MAIN)" "$(CONFIG)"
 
+test-%:
+	@set -eu; \
+	FILECOUNT=$$(find config -maxdepth 1 -type f | wc -l); \
+	SUBTARGETNUM="${@:test-%=%}"; \
+	case $$SUBTARGETNUM in \
+	    ''|*[!0-9]*) \
+	     echo "Put a number."; \
+	exit 1; \
+	     ;; \
+	esac; \
+	if ! [ "$$SUBTARGETNUM" -gt 0 ] || \
+	   ! [ "$$SUBTARGETNUM" -le "$$FILECOUNT" ]; then \
+		echo "1~$$FILECOUNT is valid." >&2; \
+		exit 1; \
+	fi; \
+	FILENAME="$$(find config -maxdepth 1 -type f | sort | sed -n "$${SUBTARGETNUM}p")"; \
+	if [ ! -x "$(PYTHON)" ]; then \
+		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
+		exit 1; \
+	fi; \
+	echo "$$FILENAME"; \
+	"$(PYTHON)" "$(MAIN)" "$$FILENAME"
+
 clean:
 	@set -eu; \
 	find . -type d -name ".mypy_cache" -prune -exec rm -rf {} +; \
