@@ -1,0 +1,9 @@
+# Comments and blank lines are ignored.
+
+WIDTH=6
+HEIGHT=6
+ENTRY=0,0
+EXIT=5,5
+OUTPUT_FILE=maze_commented.txt
+PERFECT=False
+SEED=123
