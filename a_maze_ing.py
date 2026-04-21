@@ -9,7 +9,7 @@ def main(argv: list[str]) -> int:
     try:
         MazeApp().run(argv[-1])
     except Exception as e:
-        print(e, file=sys.stderr)
+        print(f"Configuration error: {e}", file=sys.stderr)
         return 1
     return 0
 
