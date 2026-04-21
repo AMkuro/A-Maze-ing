@@ -1,6 +1,7 @@
 from .MazeGenerator import Maze
 from .MazeSolver import Solution
 
+
 class MazeSerializer:
     """Serialize maze data into the project output format."""
 
@@ -28,7 +29,6 @@ class MazeSerializer:
             lines.append(line)
 
         return lines
-
 
     @staticmethod
     def _format_footer(maze: Maze, solution: Solution) -> list[str]:
