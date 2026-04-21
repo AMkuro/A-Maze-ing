@@ -64,6 +64,16 @@ class AppConfig(BaseModel):
         '\x00\n\r<>|*?"'
     )
 
+    @field_validator("perfect", mode="before")
+    @classmethod
+    def validate_flag(cls, value: object):
+        if isinstance(value, str):
+            if value == "false" or value == "False":
+                return False
+            if value == "true" or value == "True":
+                return True
+            raise ValueError("PERFECT must be True or False")
+
     @field_validator("output_file")
     @classmethod
     def validate_output_file(cls, value: str) -> str:
