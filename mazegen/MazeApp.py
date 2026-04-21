@@ -199,3 +199,8 @@ class MazeApp:
                 )
             elif cmd == "4":
                 break
+            else:
+                if self._viz is not None:
+                    self._viz.draw()
+                else:
+                    raise RuntimeError("Something broken, Stop the program.")
