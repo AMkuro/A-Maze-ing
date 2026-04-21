@@ -85,7 +85,7 @@ class MazeGenerator:
             print('"42" pattern has omitted by the maze size.')
             return grid
 
-        if relative_gateway in pattern:
+        if relative_gateway & pattern:
             print('"42" pattern has omitted by the place of entry and exit')
             return grid
 
