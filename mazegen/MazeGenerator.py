@@ -19,6 +19,8 @@ class MazeGenerator:
         entry = config.entry
         exit = config.exit
 
+        if width == 1 or height == 1:
+            raise ValueError("A maze with a single path is not a maze.")
         grid = MazeGenerator._init_grid(width, height)
         grid = MazeGenerator._embed_42_pattern(grid, {entry, exit})
         grid = MazeGenerator._carve_passages(grid)
