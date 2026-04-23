@@ -73,6 +73,7 @@ class AppConfig(BaseModel):
             if value == "true" or value == "True":
                 return True
             raise ValueError("PERFECT must be True or False")
+        return value
 
     @field_validator("output_file")
     @classmethod
