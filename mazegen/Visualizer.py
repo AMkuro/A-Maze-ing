@@ -1,13 +1,7 @@
 from dataclasses import dataclass
-from .MazeGenerator import Maze
-from .MazeSolver import Solution
+from .MazeModel import Maze, Solution, Wall
 import sys
 from typing import Callable
-
-NORTH = 1 << 0
-EAST = 1 << 1
-SOUTH = 1 << 2
-WEST = 1 << 3
 
 RESET = "\033[0m"
 
@@ -205,11 +199,11 @@ class Visualizer:
                 left = 2 * c
 
                 # North Wall
-                if cell & NORTH:
+                if cell & Wall.NORTH:
                     row_top[left:left + 3] = set_of_wall
 
                 # West Wall
-                if cell & WEST:
+                if cell & Wall.WEST:
                     row_top[left] = 1
                     row_center[left] = 1
                     row_bottom[left] = 1
@@ -218,14 +212,14 @@ class Visualizer:
         last_grid_row = grid[h - 1]
         last_canvas_row = canvas[-1]
         for c in range(w):
-            if last_grid_row[c] & SOUTH:
+            if last_grid_row[c] & Wall.SOUTH:
                 left = 2 * c
                 last_canvas_row[left:left + 3] = set_of_wall
 
         # The last column for setting East Wall
         right_col = -1
         for r in range(h):
-            if grid[r][w - 1] & EAST:
+            if grid[r][w - 1] & Wall.EAST:
                 top = 2 * r
                 center_r = top + 1
                 bottom = top + 2
@@ -233,6 +227,11 @@ class Visualizer:
                 canvas[center_r][right_col] = 1
                 canvas[bottom][right_col] = 1
         return canvas
+
+    def _build_space_grid_and_idx(
+        self, buffer: list[bytearray]
+    ) -> tuple[list[list[str]], list[bytearray]]:
+        row_pairs, col_pairs = self._get_render_pairs()
 
     def _build_char_grid_and_idx(
         self, buffer: list[bytearray]
