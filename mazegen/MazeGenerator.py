@@ -8,6 +8,13 @@ GateWay = set[tuple[int, int]]
 class MazeGenerator:
     """Generate maze data for the visualizer-compatible cell grid."""
 
+    directions = (
+        (-1, 0, Wall.NORTH, Wall.SOUTH),
+        (0, 1, Wall.EAST, Wall.WEST),
+        (1, 0, Wall.SOUTH, Wall.NORTH),
+        (0, -1, Wall.WEST, Wall.EAST),
+    )
+
     @staticmethod
     def generate(config: "AppConfig") -> Maze:
         """Generate a maze from validated configuration.
@@ -139,29 +146,17 @@ class MazeGenerator:
         """
         height = len(grid)
         width = len(grid[0])
-
         start = (0, 0)
-        if start is None:
-            raise ValueError(
-                "No valid starting cell found for maze generation."
-            )
 
         visited = [bytearray(width) for _ in range(height)]
         stack: list[Pos] = [start]
         visited[start[0]][start[1]] = True
 
-        directions = [
-            (-1, 0, Wall.NORTH, Wall.SOUTH),
-            (0, 1, Wall.EAST, Wall.WEST),
-            (1, 0, Wall.SOUTH, Wall.NORTH),
-            (0, -1, Wall.WEST, Wall.EAST),
-        ]
-
         while stack:
             y, x = stack[-1]
             neighbors: list[tuple[int, int, int, int]] = []
 
-            for dy, dx, wall, opposite_wall in directions:
+            for dy, dx, wall, opposite_wall in MazeGenerator.directions:
                 ny, nx = y + dy, x + dx
                 if not (0 <= ny < height and 0 <= nx < width):
                     continue
@@ -199,13 +194,6 @@ class MazeGenerator:
         height = len(grid)
         width = len(grid[0])
 
-        directions = [
-            (-1, 0, Wall.NORTH, Wall.SOUTH),
-            (0, 1, Wall.EAST, Wall.WEST),
-            (1, 0, Wall.SOUTH, Wall.NORTH),
-            (0, -1, Wall.WEST, Wall.EAST),
-        ]
-
         candidates: list[tuple[int, int, int, int, int, int]] = []
 
         for y in range(height):
@@ -213,7 +201,7 @@ class MazeGenerator:
                 if MazeGenerator._is_42_cell(grid[y][x]):
                     continue
 
-                for dy, dx, wall, opposite_wall in directions:
+                for dy, dx, wall, opposite_wall in MazeGenerator.directions:
                     ny = y + dy
                     nx = x + dx
 
@@ -221,7 +209,6 @@ class MazeGenerator:
                         continue
                     if MazeGenerator._is_42_cell(grid[ny][nx]):
                         continue
-
                     if (grid[y][x] & wall) == 0:
                         continue
 

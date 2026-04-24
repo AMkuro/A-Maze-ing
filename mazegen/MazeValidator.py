@@ -36,15 +36,18 @@ class MazeValidator:
             for x in range(width):
                 cell = grid[y][x]
 
-                if x + 1 < width and (
-                    has_wall(cell, Wall.EAST)
-                    != has_wall(grid[y][x + 1], Wall.WEST)
-                ):
-                    raise ValueError(f"Wall Consistency Error:pos ({x},{y})")
-
-                if y + 1 < height and (
-                    has_wall(cell, Wall.SOUTH)
-                    != has_wall(grid[y + 1][x], Wall.NORTH)
+                if (
+                    x + 1 < width
+                    and (
+                        has_wall(cell, Wall.EAST)
+                        != has_wall(grid[y][x + 1], Wall.WEST)
+                    )
+                ) or (
+                    y + 1 < height
+                    and (
+                        has_wall(cell, Wall.SOUTH)
+                        != has_wall(grid[y + 1][x], Wall.NORTH)
+                    )
                 ):
                     raise ValueError(f"Wall Consistency Error:pos ({x},{y})")
 

@@ -6,6 +6,13 @@ from .MazeModel import Maze, Wall, Pos, Solution
 class MazeSolver:
     """Solve a maze using BFS."""
 
+    directions = (
+        (-1, 0, Wall.NORTH),
+        (1, 0, Wall.SOUTH),
+        (0, -1, Wall.WEST),
+        (0, 1, Wall.EAST),
+    )
+
     @staticmethod
     def solve(maze: "Maze") -> "Solution":
         """Find a shortest path from maze entry to exit.
@@ -54,20 +61,13 @@ class MazeSolver:
         grid = maze.grid
         came_from: dict[Pos, Pos | None] = {start: None}
 
-        directions = [
-            (-1, 0, Wall.NORTH),
-            (1, 0, Wall.SOUTH),
-            (0, -1, Wall.WEST),
-            (0, 1, Wall.EAST),
-        ]
-
         while queue:
             y, x = queue.popleft()
 
             if (y, x) == end:
                 break
 
-            for dy, dx, direction in directions:
+            for dy, dx, direction in MazeSolver.directions:
                 ny, nx = y + dy, x + dx
                 neighbor: Pos = (ny, nx)
 
