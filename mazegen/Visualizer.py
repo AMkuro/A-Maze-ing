@@ -228,11 +228,6 @@ class Visualizer:
                 canvas[bottom][right_col] = 1
         return canvas
 
-    def _build_space_grid_and_idx(
-        self, buffer: list[bytearray]
-    ) -> tuple[list[list[str]], list[bytearray]]:
-        row_pairs, col_pairs = self._get_render_pairs()
-
     def _build_char_grid_and_idx(
         self, buffer: list[bytearray]
     ) -> tuple[list[list[str]], list[bytearray]]:

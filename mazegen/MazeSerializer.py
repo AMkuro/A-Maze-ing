@@ -1,5 +1,4 @@
-from .MazeGenerator import Maze
-from .MazeSolver import Solution
+from .MazeModel import Maze, Solution
 
 
 class MazeSerializer:

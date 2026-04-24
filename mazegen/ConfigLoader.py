@@ -90,14 +90,15 @@ class AppConfig(BaseModel):
             ValueError: If the filename is empty or contains forbidden
                 characters.
         """
-        if not value.strip():
+        normalized = value.strip()
+        if not normalized:
             raise ValueError("OUTPUT_FILE must not be empty.")
         bad: set[str] = set(value) & AppConfig._forbidden_file_chars
         if bad:
             raise ValueError(
                 f"OUTPUT_FILE contains invalid characters: {sorted(bad)!r}."
             )
-        return value
+        return normalized
 
     @model_validator(mode="after")
     def validate_positions(self) -> Self:
@@ -280,13 +281,11 @@ class ConfigLoader:
         message = str(first_error.get("msg", "Invalid configuration."))
         message = message.removeprefix("Value error, ")
 
-        if first_error.get("type") == "missing":
-            location = first_error.get("loc", ())
-            field = str(location[0]) if location else ""
-            return f"Missing required config key: {cls._external_key(field)}."
-
         location = first_error.get("loc", ())
         field = str(location[0]) if location else ""
+        if first_error.get("type") == "missing":
+            return f"Missing required config key: {cls._external_key(field)}."
+
         if field:
             return f"{cls._external_key(field)}: {message}"
         return message
