@@ -4,8 +4,6 @@ from .MazeSolver import MazeSolver, Solution
 from .Visualizer import ColorScheme, Visualizer
 from .MazeSerializer import MazeSerializer
 from .MazeValidator import MazeValidator
-import colorsys
-import random
 
 
 class MazeApp:
@@ -18,6 +16,7 @@ class MazeApp:
         self._solution: Solution | None = None
         self._viz: Visualizer | None = None
         self._show_path: bool = False
+        self._theme_index: int = 0
 
     def _load_config(self, filepath: str) -> AppConfig:
         """Load and store application configuration.
@@ -133,23 +132,61 @@ class MazeApp:
         self._viz.draw()
 
     @staticmethod
-    def get_pentadic_colors() -> list[tuple[int, int, int]]:
-        """Generate five visually separated RGB colors.
+    def _get_color_themes() -> list[ColorScheme]:
+        """Return predefined terminal color themes.
 
         Returns:
-            List of five ``(red, green, blue)`` color tuples.
+            List of color themes used for cyclic theme switching.
+            The first theme is the default visualizer color scheme.
         """
-        colors: list[tuple[int, int, int]] = []
-        start_hue: float = random.random()
+        return [
+            ColorScheme(),
+            ColorScheme(
+                wall=ColorScheme.fg(100, 180, 255),
+                path=ColorScheme.bg(20, 24, 32),
+                solution=ColorScheme.bg(56, 73, 225),
+                entry=ColorScheme.bg(50, 200, 80),
+                exit=ColorScheme.bg(220, 70, 60),
+            ),
+            ColorScheme(
+                wall=ColorScheme.fg(120, 220, 160),
+                path=ColorScheme.bg(20, 30, 24),
+                solution=ColorScheme.bg(40, 140, 90),
+                entry=ColorScheme.bg(80, 210, 110),
+                exit=ColorScheme.bg(220, 90, 70),
+            ),
+            ColorScheme(
+                wall=ColorScheme.fg(255, 160, 160),
+                path=ColorScheme.bg(32, 22, 22),
+                solution=ColorScheme.bg(180, 70, 70),
+                entry=ColorScheme.bg(70, 180, 90),
+                exit=ColorScheme.bg(230, 80, 80),
+            ),
+            ColorScheme(
+                wall=ColorScheme.fg(210, 170, 255),
+                path=ColorScheme.bg(28, 22, 36),
+                solution=ColorScheme.bg(120, 80, 180),
+                entry=ColorScheme.bg(70, 190, 100),
+                exit=ColorScheme.bg(230, 90, 90),
+            ),
+            ColorScheme(
+                wall=ColorScheme.fg(220, 220, 220),
+                path=ColorScheme.bg(30, 30, 30),
+                solution=ColorScheme.bg(90, 90, 90),
+                entry=ColorScheme.bg(80, 180, 100),
+                exit=ColorScheme.bg(210, 80, 80),
+            ),
+        ]
 
-        saturation = 0.8
-        lightness_steps = [0.5, 0.7, 0.4, 0.8, 0.6]
-        for i in range(5):
-            hue = (start_hue + (i * 0.2)) % 1.0
-            l_value = lightness_steps[i]
-            r, g, b = colorsys.hls_to_rgb(hue, l_value, saturation)
-            colors.append((int(r * 255), int(g * 255), int(b * 255)))
-        return colors
+    def _next_theme(self) -> ColorScheme:
+        """Advance to the next predefined color theme.
+
+        Returns:
+            The next color theme in the cyclic theme list.
+        """
+        themes = self._get_color_themes()
+        self._theme_index = (self._theme_index + 1) % len(themes)
+        return themes[self._theme_index]
 
     def run(self, filepath: str) -> None:
         """Run the application and interactive menu.
@@ -187,16 +224,7 @@ class MazeApp:
             elif cmd == "3":
                 if self._viz is None:
                     raise RuntimeError("Visualizer is not initialized.")
-                pentadic_colors = self.get_pentadic_colors()
-                self._viz.change_color(
-                    ColorScheme(
-                        wall=ColorScheme.fg(*pentadic_colors[0]),
-                        path=ColorScheme.bg(*pentadic_colors[1]),
-                        solution=ColorScheme.bg(*pentadic_colors[2]),
-                        entry=ColorScheme.bg(*pentadic_colors[3]),
-                        exit=ColorScheme.bg(*pentadic_colors[4]),
-                    )
-                )
+                self._viz.change_color(self._next_theme())
             elif cmd == "4":
                 break
             else:
