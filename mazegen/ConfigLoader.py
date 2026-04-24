@@ -281,13 +281,11 @@ class ConfigLoader:
         message = str(first_error.get("msg", "Invalid configuration."))
         message = message.removeprefix("Value error, ")
 
-        if first_error.get("type") == "missing":
-            location = first_error.get("loc", ())
-            field = str(location[0]) if location else ""
-            return f"Missing required config key: {cls._external_key(field)}."
-
         location = first_error.get("loc", ())
         field = str(location[0]) if location else ""
+        if first_error.get("type") == "missing":
+            return f"Missing required config key: {cls._external_key(field)}."
+
         if field:
             return f"{cls._external_key(field)}: {message}"
         return message
