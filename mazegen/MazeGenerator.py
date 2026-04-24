@@ -140,7 +140,7 @@ class MazeGenerator:
         height = len(grid)
         width = len(grid[0])
 
-        start = MazeGenerator._find_start_cell(grid)
+        start = (0, 0)
         if start is None:
             raise ValueError(
                 "No valid starting cell found for maze generation."
@@ -182,26 +182,6 @@ class MazeGenerator:
                 stack.pop()
 
         return grid
-
-    @staticmethod
-    def _find_start_cell(grid: Grid) -> Pos | None:
-        """Find the first cell that is not part of the ``42`` pattern.
-
-        Args:
-            grid: Maze grid to scan.
-
-        Returns:
-            First usable cell position, or ``None`` when every cell is
-            protected.
-        """
-        height = len(grid)
-        width = len(grid[0])
-
-        for y in range(height):
-            for x in range(width):
-                if not MazeGenerator._is_42_cell(grid[y][x]):
-                    return (y, x)
-        return None
 
     @staticmethod
     def _make_imperfect(grid: Grid) -> Grid:
