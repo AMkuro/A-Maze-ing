@@ -66,7 +66,7 @@ class AppConfig(BaseModel):
 
     @field_validator("perfect", mode="before")
     @classmethod
-    def validate_flag(cls, value: object):
+    def validate_flag(cls, value: object) -> object:
         if isinstance(value, str):
             if value == "false" or value == "False":
                 return False

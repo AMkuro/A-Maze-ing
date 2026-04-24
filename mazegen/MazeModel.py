@@ -5,7 +5,16 @@ Pos = tuple[int, int]
 
 
 class Wall:
-    """Wall bit constants used by maze cells."""
+    """Wall bit constants used by maze cells.
+
+    Attributes:
+        NORTH: Bit for a wall to the north of a cell.
+        EAST: Bit for a wall to the east of a cell.
+        SOUTH: Bit for a wall to the south of a cell.
+        WEST: Bit for a wall to the west of a cell.
+        WALL_42: Bit used for internal generation state, not an actual wall.
+        ALL_WALLS: Bitmask with all four cardinal walls set.
+    """
 
     NORTH = 1 << 0
     EAST = 1 << 1

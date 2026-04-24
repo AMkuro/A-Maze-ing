@@ -215,7 +215,4 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-mazegen-*.tar.gz
-mazegen-*.whl
 maze.txt
-config.txt

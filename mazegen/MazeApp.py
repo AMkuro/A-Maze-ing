@@ -1,6 +1,7 @@
 from .ConfigLoader import ConfigLoader, AppConfig
-from .MazeGenerator import Maze, MazeGenerator
-from .MazeSolver import MazeSolver, Solution
+from .MazeGenerator import MazeGenerator
+from .MazeSolver import MazeSolver
+from .MazeModel import Maze, Solution
 from .Visualizer import ColorScheme, Visualizer
 from .MazeSerializer import MazeSerializer
 from .MazeValidator import MazeValidator

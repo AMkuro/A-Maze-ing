@@ -1,4 +1,3 @@
-from mazegen.MazeApp import MazeApp
 import sys
 
 
@@ -16,11 +15,16 @@ def main(argv: list[str]) -> int:
         print("Usage: python3 a_maze_ing.py <config.txt>", file=sys.stderr)
         return 2
     try:
+        from mazegen.MazeApp import MazeApp
+    except ImportError as e:
+        print(f"{e} make install first!")
+        return 1
+    try:
         MazeApp().run(argv[-1])
     except Exception as e:
         print(f"Configuration error: {e}", file=sys.stderr)
         return 1
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt:
         print()
         return 0
     return 0
