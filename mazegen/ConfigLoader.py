@@ -90,14 +90,15 @@ class AppConfig(BaseModel):
             ValueError: If the filename is empty or contains forbidden
                 characters.
         """
-        if not value.strip():
+        normalized = value.strip()
+        if not normalized:
             raise ValueError("OUTPUT_FILE must not be empty.")
         bad: set[str] = set(value) & AppConfig._forbidden_file_chars
         if bad:
             raise ValueError(
                 f"OUTPUT_FILE contains invalid characters: {sorted(bad)!r}."
             )
-        return value
+        return normalized
 
     @model_validator(mode="after")
     def validate_positions(self) -> Self:
