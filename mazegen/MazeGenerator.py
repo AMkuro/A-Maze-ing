@@ -120,8 +120,7 @@ class MazeGenerator:
             y = center_y + dy
             x = center_x + dx
 
-            if 0 <= y < height and 0 <= x < width:
-                grid[y][x] |= Wall.WALL_42
+            grid[y][x] |= Wall.WALL_42
 
         return grid
 
