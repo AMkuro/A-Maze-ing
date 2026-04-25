@@ -33,6 +33,10 @@ make run CONFIG=path/to/your_config.txt
 ```bash
 make debug
 ```
+##### 時間計測
+```bash
+make time-<maze size>
+```
 ##### コード品質の確認:
 ```bash
 make lint
