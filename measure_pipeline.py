@@ -8,11 +8,11 @@ class BenchResult:
     size: int
     gen_ms: float
     solve_ms: float
-    render_ms: float
+    validate_ms: float
 
     @property
     def total_ms(self) -> float:
-        return self.gen_ms + self.solve_ms + self.render_ms
+        return self.gen_ms + self.solve_ms + self.validate_ms
 
 
 def measure_pipeline(size: int) -> BenchResult:
@@ -39,7 +39,7 @@ def measure_pipeline(size: int) -> BenchResult:
     t0 = time.perf_counter()
     gen = MazeGenerator
     maze = gen.generate(
-        AppConfig.model_config(
+        AppConfig.model_validate(
             {
                 "width": size,
                 "height": size,
@@ -70,8 +70,8 @@ if __name__ == "__main__":
             "Usage: python3 measure_pipeline.py <maze_size>", file=sys.stderr
         )
         sys.exit(2)
-    if not str(args[1]).isdigit():
-        print("Maze size must be integer.", file=sys.stderr)
+    if not args[1].isdigit():
+        print("Maze size must be integer!", file=sys.stderr)
         sys.exit(2)
     try:
         result = measure_pipeline(int(args[1]))
@@ -79,7 +79,7 @@ if __name__ == "__main__":
             f"size={result.size:4d}  "
             f"gen={result.gen_ms:7.1f}ms  "
             f"solve={result.solve_ms:7.1f}ms  "
-            f"render={result.render_ms:7.1f}ms  "
+            f"validate={result.validate_ms:7.1f}ms  "
             f"total={result.total_ms:7.1f}ms"
         )
     except Exception as e:
