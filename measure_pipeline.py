@@ -81,12 +81,12 @@ if __name__ == "__main__":
     try:
         result = measure_pipeline(int(args[1]))
         print(
-            f"size={result.size:4d} "
-            f"gen={result.gen_ms:7.1f}ms "
-            f"solve={result.solve_ms:7.1f}ms "
-            f"validate={result.validate_ms:7.1f}ms "
-            f"render={result.render_ms:7.1f}ms "
-            f"total={result.total_ms:7.1f}ms"
+            f"size = {result.size:2d} "
+            f"gen = {result.gen_ms:2.1f}ms "
+            f"solve = {result.solve_ms:2.1f}ms "
+            f"validate = {result.validate_ms:2.1f}ms "
+            f"render = {result.render_ms:2.1f}ms "
+            f"total = {result.total_ms:2.1f}ms"
         )
     except Exception as e:
         print(e)
