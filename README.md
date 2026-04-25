@@ -30,16 +30,16 @@ make run
 make run CONFIG=path/to/your_config.txt
 ```
 ##### デバッグ:
-```
+```bash
 make debug
 ```
 ##### コード品質の確認:
-```
+```bash
 make lint
 make lint--strict
 ```
 ##### 一時ファイルやキャッシュの削除:
-```
+```bash
 make clean
 ```
 ---
@@ -50,16 +50,20 @@ make clean
 
 設定例:
 ```text
+# Mandatory keys
 
 WIDTH=15
 HEIGHT=10
-ENTRY=0,0
-EXIT=14,9
+
+ENTRY = 0,0
+EXIT=14, 9
 
 OUTPUT_FILE=maze.txt
 PERFECT=True
 
-SEED=42
+# additional keys
+# SEED = 42
+
 ```
 
 
@@ -90,7 +94,6 @@ SEED=42
 
 `PERFECT=True` の場合は、すべてのセルが連結であり、かつ閉路を持たない完全迷路を生成する。
 `PERFECT=False` の場合は、完全迷路生成後に追加で壁を開放することで、少なくとも 1 つの閉路を持つ不完全迷路を生成する。
-
 ただし、この場合でも 3×3 の完全開放領域は作らないようにしている。
 
 また、本プロジェクトでは迷路中央付近に “42” パターンを埋め込む仕組みを実装している。
