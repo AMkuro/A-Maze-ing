@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from .MazeModel import Maze, Solution, Wall
 import sys
-from typing import Callable
 
 RESET = "\033[0m"
 
@@ -393,7 +392,13 @@ class Visualizer:
         """Draw the maze and solution to standard output."""
         canvas: list[bytearray] = self._build_render_buffer()
         string: str = self._render_to_string(canvas)
-        sys.stdout.write(string + "\n")
+        sys.stdout.buffer.write(string.encode("utf-8"))
+        sys.stdout.write("\n")
+
+    def dry_draw(self) -> None:
+        """Draw the maze and solution with non output."""
+        canvas: list[bytearray] = self._build_render_buffer()
+        self._render_to_string(canvas)
 
     def toggle_path(self) -> bool:
         """Toggle shortest-path visibility and redraw.
@@ -426,16 +431,6 @@ class Visualizer:
         string: str = self._apply_color(char_grid, idx_grid)
         sys.stdout.buffer.write(string.encode("utf-8"))
         sys.stdout.write("\n")
-
-    def on_regenerate(self, callback: Callable[[], None]) -> None:
-        """Clear cached render data before regeneration.
-
-        Args:
-            callback: Regeneration callback reserved for future UI backends.
-        """
-        self._idx_grid_cache = None
-        self._char_grid_cache = None
-        pass
 
 
 if __name__ == "__main__":

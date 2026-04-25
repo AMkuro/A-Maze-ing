@@ -62,6 +62,29 @@ debug:
 	fi; \
 	$(PYTHON) -m pdb "$(MAIN)" "$(CONFIG)"
 
+time-%:
+	@set -eu; \
+	SUBTARGETNUM="${@:time-%=%}"; \
+	case $$SUBTARGETNUM in \
+	    ''|*[!0-9]*) \
+	     echo "Put a number."; \
+	exit 1; \
+	     ;; \
+	esac; \
+	if ! [ "$$SUBTARGETNUM" -gt 0 ]; then \
+		echo "Maze size must be positive number." >&2; \
+		exit 1; \
+	fi; \
+	if [ ! -x "$(PYTHON)" ]; then \
+		echo "Error: no valid virtualenv found. Run 'make install' first." >&2; \
+		exit 1; \
+	fi; \
+	if [ ! -f "measure_pipeline.py" ]; then \
+		echo "Test module has not found." >&2; \
+		exit 1; \
+	fi; \
+	"$(PYTHON)" "measure_pipeline.py" "$$SUBTARGETNUM"
+
 clean:
 	@set -eu; \
 	find . -type d -name ".mypy_cache" -prune -exec rm -rf {} +; \
