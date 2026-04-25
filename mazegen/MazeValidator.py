@@ -1,8 +1,17 @@
+from collections import deque
+from typing import Deque
 from .MazeModel import Maze, Wall
 
 
 class MazeValidator:
     """Validate generated maze structure."""
+
+    directions = (
+        (-1, 0, Wall.NORTH),
+        (1, 0, Wall.SOUTH),
+        (0, -1, Wall.WEST),
+        (0, 1, Wall.EAST),
+    )
 
     @staticmethod
     def _has_wall(cell: int, wall: int) -> bool:
@@ -127,21 +136,22 @@ class MazeValidator:
                     raise ValueError("There is a 3*3 open area.")
 
     @staticmethod
-    def _check_imperfect(maze: "Maze") -> None:
-        """Check that the maze contains at least one loop.
+    def _check_reachability_and_loop(maze: "Maze", perfect: bool) -> None:
+        """Check reachability and loop condition.
 
         Args:
             maze: Maze to validate.
+            perfect: Whether the maze is expected to be perfect.
 
         Raises:
-            ValueError: If the maze is still perfect.
+            ValueError: If cells are unreachable or loop condition is invalid.
         """
         width = maze.width
         height = maze.height
         grid = maze.grid
 
         cell = 0
-        edge = 0
+        start: tuple[int, int] | None = None
 
         for y in range(height):
             for x in range(width):
@@ -149,16 +159,45 @@ class MazeValidator:
                     continue
 
                 cell += 1
+                if start is None:
+                    start = (y, x)
 
-                if x + 1 < width and not (grid[y][x + 1] & Wall.WALL_42):
-                    if (grid[y][x] & Wall.EAST) == 0:
-                        edge += 1
+        if start is None:
+            raise ValueError("Maze has no breakable walls.")
 
-                if y + 1 < height and not (grid[y + 1][x] & Wall.WALL_42):
-                    if (grid[y][x] & Wall.SOUTH) == 0:
-                        edge += 1
+        queue: Deque[tuple[int, int]] = deque([start])
+        reached: set[tuple[int, int]] = {start}
+        reachable_edge = 0
 
-        if edge <= cell - 1:
+        while queue:
+            y, x = queue.popleft()
+
+            for dy, dx, wall in MazeValidator.directions:
+                if grid[y][x] & wall:
+                    continue
+
+                ny = y + dy
+                nx = x + dx
+                if not (0 <= ny < height and 0 <= nx < width):
+                    continue
+                if grid[ny][nx] & Wall.WALL_42:
+                    continue
+
+                reachable_edge += 1
+                neighbor = (ny, nx)
+                if neighbor in reached:
+                    continue
+
+                reached.add(neighbor)
+                queue.append(neighbor)
+
+        if len(reached) != cell:
+            raise ValueError("Not all cells are reachable.")
+
+        edge = reachable_edge // 2
+        if perfect and edge != cell - 1:
+            raise ValueError("Maze has a loop, but should be perfect.")
+        if not perfect and edge <= cell - 1:
             raise ValueError("Maze is still perfect, but should be imperfect.")
 
     def validate(self, maze: "Maze", perfect: bool) -> None:
@@ -175,6 +214,4 @@ class MazeValidator:
         self._check_wall_consistency(maze)
         self._check_outer_walls(maze)
         self._check_no_open_3x3(maze)
-
-        if not perfect:
-            self._check_imperfect(maze)
+        self._check_reachability_and_loop(maze, perfect)
