@@ -50,16 +50,20 @@ make clean
 
 設定例:
 ```text
+# Mandatory keys
 
 WIDTH=15
 HEIGHT=10
-ENTRY=0,0
-EXIT=14,9
+
+ENTRY = 0,0
+EXIT=14, 9
 
 OUTPUT_FILE=maze.txt
 PERFECT=True
 
-SEED=42
+# additional keys
+# SEED = 42
+
 ```
 
 
