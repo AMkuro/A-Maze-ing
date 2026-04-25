@@ -30,16 +30,16 @@ make run
 make run CONFIG=path/to/your_config.txt
 ```
 ##### デバッグ:
-```
+```bash
 make debug
 ```
 ##### コード品質の確認:
-```
+```bash
 make lint
 make lint--strict
 ```
 ##### 一時ファイルやキャッシュの削除:
-```
+```bash
 make clean
 ```
 ---
