@@ -26,8 +26,8 @@ class AppConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
-    width: int = Field(gt=0)
-    height: int = Field(gt=0)
+    width: int = Field(gt=0, lt=316)
+    height: int = Field(gt=0, lt=316)
     entry: tuple[int, int]
     exit: tuple[int, int]
     output_file: str
