@@ -14,6 +14,7 @@ class MazeGenerator:
         (1, 0, Wall.SOUTH, Wall.NORTH),
         (0, -1, Wall.WEST, Wall.EAST),
     )
+    terminal_max = 316
 
     @staticmethod
     def generate(config: "AppConfig") -> Maze:
@@ -39,6 +40,14 @@ class MazeGenerator:
 
         if width == 1 or height == 1:
             raise ValueError("A maze with a single path is not a maze.")
+        if (
+            width >= MazeGenerator.terminal_max
+            or height >= MazeGenerator.terminal_max
+        ):
+            raise ValueError(
+                f"Maze dimensions must be less than "
+                f"{MazeGenerator.terminal_max}."
+            )
         grid = MazeGenerator._init_grid(width, height)
         grid = MazeGenerator._embed_42_pattern(grid, {entry, exit})
         grid = MazeGenerator._carve_passages(grid)
