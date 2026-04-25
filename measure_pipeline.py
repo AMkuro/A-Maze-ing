@@ -9,10 +9,11 @@ class BenchResult:
     gen_ms: float
     solve_ms: float
     validate_ms: float
+    render_ms: float
 
     @property
     def total_ms(self) -> float:
-        return self.gen_ms + self.solve_ms + self.validate_ms
+        return self.gen_ms + self.solve_ms + self.validate_ms + self.render_ms
 
 
 def measure_pipeline(size: int) -> BenchResult:
@@ -20,7 +21,6 @@ def measure_pipeline(size: int) -> BenchResult:
 
     Runs generation, pathfinding, and ASCII rendering in sequence,
     recording the elapsed time of each stage separately.
-
     Args:
         size: The width and height of the square maze in cells.
 
@@ -33,6 +33,7 @@ def measure_pipeline(size: int) -> BenchResult:
     from mazegen.MazeGenerator import MazeGenerator
     from mazegen.MazeSolver import MazeSolver
     from mazegen.MazeValidator import MazeValidator
+    from mazegen.Visualizer import Visualizer
 
     is_perfect: bool = False
 
@@ -53,14 +54,18 @@ def measure_pipeline(size: int) -> BenchResult:
     gen_ms = (time.perf_counter() - t0) * 1000
 
     t0 = time.perf_counter()
-    MazeSolver.solve(maze)
+    solution = MazeSolver.solve(maze)
     solve_ms = (time.perf_counter() - t0) * 1000
 
     t0 = time.perf_counter()
     MazeValidator().validate(maze, is_perfect)
     validate_ms = (time.perf_counter() - t0) * 1000
 
-    return BenchResult(size, gen_ms, solve_ms, validate_ms)
+    t0 = time.perf_counter()
+    Visualizer(maze, solution, True).dry_draw()
+    render_ms = (time.perf_counter() - t0) * 1000
+
+    return BenchResult(size, gen_ms, solve_ms, validate_ms, render_ms)
 
 
 if __name__ == "__main__":
@@ -76,10 +81,11 @@ if __name__ == "__main__":
     try:
         result = measure_pipeline(int(args[1]))
         print(
-            f"size={result.size:4d}  "
-            f"gen={result.gen_ms:7.1f}ms  "
-            f"solve={result.solve_ms:7.1f}ms  "
-            f"validate={result.validate_ms:7.1f}ms  "
+            f"size={result.size:4d} "
+            f"gen={result.gen_ms:7.1f}ms "
+            f"solve={result.solve_ms:7.1f}ms "
+            f"validate={result.validate_ms:7.1f}ms "
+            f"render={result.render_ms:7.1f}ms "
             f"total={result.total_ms:7.1f}ms"
         )
     except Exception as e:
