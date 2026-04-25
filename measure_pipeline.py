@@ -5,6 +5,16 @@ import sys
 
 @dataclass
 class BenchResult:
+    """Benchmark result for a single maze pipeline run.
+
+    Attributes:
+        size: Width and height of the square maze in cells.
+        gen_ms: Time taken for maze generation in milliseconds.
+        solve_ms: Time taken for shortest path solving in milliseconds.
+        validate_ms: Time taken for maze validation in milliseconds.
+        render_ms: Time taken for Terminal ASCII rendering in milliseconds.
+    """
+
     size: int
     gen_ms: float
     solve_ms: float
